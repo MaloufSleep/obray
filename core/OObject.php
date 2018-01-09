@@ -73,14 +73,17 @@
 	}
 
 	if (!function_exists('getallheaders')){
-        function getallheaders(){
-        	$headers = array();
-			foreach ($_SERVER as $name => $value){
-				if (substr($name, 0, 5) == 'HTTP_'){
-					$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
-				}
-			}
-			return $headers;
+        function getallheaders()
+        {
+               $headers = '';
+           foreach ($_SERVER as $name => $value)
+           {
+               if (substr($name, 0, 5) == 'HTTP_')
+               {
+                   $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+               }
+           }
+           return $headers;
         }
     }
 
@@ -203,7 +206,7 @@
 				handle remote HTTP(S) calls
 			*********************************/
 			if( isSet($components['host']) && $direct ){
-				
+
 				$timeout = 5;
 				$ch = curl_init();
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
@@ -243,9 +246,7 @@
 							curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
 						}
 					}
-				} else if( !empty($params['http_method']) && $params['http_method'] == 'patch' ){
-					curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
-					curl_setopt($ch, CURLOPT_POSTFIELDS, $params["body"]);
+
 				} else {
 					if( !empty($params["http_method"]) ){ unset($params["http_method"]); }
 					if( !empty($components["query"]) ){
@@ -263,7 +264,7 @@
 						$this->console($headers);
 					}
 					$this->console($headers);
-					curl_setopt($ch, CURLOPT_HTTPHEADER, $headers); 
+					curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 				} else {
 					if( $debug ){
 						$this->console("NO HEADERS SET!\n");
@@ -309,27 +310,22 @@
 					}
 				}
 			} else {
-
 	    		/*********************************
 	    			Parse Path & setup params
 	    		*********************************/
 
 	    		$_REQUEST = $params;
-				
-				$path_array = explode('/',$components['path']);
-				$path_array = array_filter($path_array);
-				$path_array = array_values($path_array);
-				
+
+				$path_array = preg_split('[/]',$components['path'],NULL,PREG_SPLIT_NO_EMPTY);
 				$base_path = $this->getBasePath($path_array);
-				
+
+
 				/*********************************
 					Validate Remote Application
 				*********************************/
 
-				if( $direct === FALSE ){
-					$this->validateRemoteApplication($direct);
-				}
-				
+				$this->validateRemoteApplication($direct);
+
 				/*********************************
 					SET CONTENT TYPE FROM ROUTE
 				*********************************/
@@ -341,8 +337,9 @@
 				/*********************************
 					CALL FUNCTION
 				*********************************/
-				
+
 				if( empty($base_path) && count($path_array) == 1 && !empty($this->object) && $this->object != $path_array[0] ){
+
 					return $this->executeMethod($path,$path_array,$direct,$params);
 				}
 
@@ -490,11 +487,10 @@
                     }
                 }
 
-				if (!empty($objectType)){
+				if ( !empty($objectType) ) {
 
 					$doesNamespaceClassExist = $this->_namespacedClassExists($this->path, $obj_name);
-
-					if (!class_exists( $obj_name ) && !$doesNamespaceClassExist) {
+					if (!class_exists( $obj_name )&& !$doesNamespaceClassExist) {
 						require_once $this->path;
 					}
 					$class_exists = false;
@@ -508,7 +504,6 @@
                     }
 
 					if ($class_exists){
-
 						try{
 				    		//	CREATE OBJECT
 							if($isNamespacedPath){
@@ -568,7 +563,7 @@
 				}
 
 			}
-			
+			//exit();
 			$this->throwError('Route not found object: '.$path,404,'notfound'); return $this;
 
 		}
@@ -748,11 +743,8 @@
 		***********************************************************************/
 
 		private function getBasePath(&$path_array){
-			$base_path = '';
 			$routes = unserialize(__OBRAY_ROUTES__);
-			if(!empty($path_array) && isSet($routes[$path_array[0]])){ 
-				$base_path = $routes[array_shift($path_array)]; 
-			}
+			if(!empty($path_array) && isSet($routes[$path_array[0]])){ $base_path = $routes[array_shift($path_array)]; } else { $base_path = ''; }
 			return $base_path;
 		}
 
@@ -785,13 +777,13 @@
 			$obj_name = array_pop($components['path_array']);
 			if( count($components['path_array']) > 0 ){ $seperator = '/'; } else { $seperator = ''; }
 			$path = $components['base_path'] . implode('/',$components['path_array']).$seperator.$obj_name.'.php';
-			if (file_exists( $path ) ) { 
+			if (file_exists( $path ) ) {
 				if(!class_exists( $obj_name )){
-					require_once $path; 
+					require_once $path;
 				}
-				if (class_exists( $obj_name )){ 
-					return TRUE; 
-				} 
+				if (class_exists( $obj_name )){
+					return TRUE;
+				}
 			}
 
 			return FALSE;
@@ -818,8 +810,8 @@
 				$params = array_merge($obj->checkPermissions('object',FALSE),$params);
 
 				//	SETUP DATABSE CONNECTION
-				if( method_exists($obj,'setDatabaseConnection') ){ 
-					$obj->setDatabaseConnection(getDatabaseConnection()); 
+				if( method_exists($obj,'setDatabaseConnection') ){
+					$obj->setDatabaseConnection(getDatabaseConnection());
 					$obj->setReaderDatabaseConnection(getReaderDatabaseConnection());
 				}
 

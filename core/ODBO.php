@@ -36,12 +36,9 @@
 
 	Class ODBO extends OObject {
 
-        /**
-         * @var PDO $dbh PDO Connection
-         */
-        public $dbh;
+	    public $dbh;
 		public $enable_system_columns = TRUE;
-		
+
 		private $shouldUseReader = true;
 
 	    public function __construct(){
@@ -123,7 +120,7 @@
 			if(__OBRAY_DEBUG_MODE__){ $this->scriptTable(); $this->alterTable(); }
 
 		}
-		
+
 		public function setReaderDatabaseConnection($reader)
 		{
 			$this->reader = $reader;
@@ -962,7 +959,7 @@
             }
             return $this;
         }
-		
+
 		public function explain( $sql ){
 
 			$this->console( 'EXPLAIN ' . $sql );
@@ -1185,11 +1182,11 @@
 
 		/**
 		 * Handle DB Error
-		 * 
+		 *
 		 * Handles erros from PDO, attempt to correct failed DB connections and retries, otherwise
 		 * raises new exception.
 		 */
-		
+
 		public function handleDBError(\Exception $e, $statement, $count=1)
 		{
 			if($count >= 3) throw new \Exception($e->getErrorMessage() . ' (failed '.$count.' times)');
