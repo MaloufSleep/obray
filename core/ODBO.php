@@ -36,10 +36,7 @@
 
 	Class ODBO extends OObject {
 
-        /**
-         * @var PDO $dbh PDO Connection
-         */
-        public $dbh;
+	    public $dbh;
 	    public $enable_system_columns = TRUE;
 
 	    public function __construct(){
