@@ -234,7 +234,9 @@
 							curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
 						}
 					}
-
+				} else if( !empty($params['http_method']) && $params['http_method'] == 'patch' ){
+					curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+					curl_setopt($ch, CURLOPT_POSTFIELDS, $params["body"]);
 				} else {
 					if( !empty($params["http_method"]) ){ unset($params["http_method"]); }
 					if( !empty($components["query"]) ){
