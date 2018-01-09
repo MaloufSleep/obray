@@ -268,8 +268,10 @@
 				}
 				
 				$headers = curl_getinfo($ch, CURLINFO_HEADER_OUT);
+				$this->console($headers);
 				$content_type = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
 				$info = curl_getinfo( $ch );
+				$this->console($info);
 				$data = json_decode($this->data);
 				
 				$info["http_code"] =  intval($info["http_code"]);
