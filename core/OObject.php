@@ -200,7 +200,11 @@
     			if( !empty($components["scheme"]) && ( $components["scheme"] == "http" || $components["scheme"] == "https" ) ){
     				$path = $components["scheme"] ."://". $components["host"] . (!empty($components["port"])?':'.$components["port"]:'') . $components["path"];
     			}
-    		}
+			}
+			
+			if( !empty($params["http_debug"]) ){
+				$this->console("debug\n");
+			}
 
 			/*********************************
 				handle remote HTTP(S) calls
