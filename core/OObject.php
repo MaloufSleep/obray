@@ -201,15 +201,18 @@
     				$path = $components["scheme"] ."://". $components["host"] . (!empty($components["port"])?':'.$components["port"]:'') . $components["path"];
     			}
 			}
+
+			if( !empty($params["http_debug"]) ){
+				$this->console("debug\n");
+				$this->console($components);
+			}
 			
 			/*********************************
 				handle remote HTTP(S) calls
 			*********************************/
 			if( isSet($components['host']) && $direct ){
 
-				if( !empty($params["http_debug"]) ){
-					$this->console("debug\n");
-				}
+				
 
 				$timeout = 5;
 				$ch = curl_init();
