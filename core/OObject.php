@@ -173,7 +173,7 @@
 		***********************************************************************/
 
 		public function route( $path , $params = array(), $direct = TRUE ) {
-
+			
 			if( !$direct ){ $params = array_merge($params,$_GET,$_POST); }
 			$cmd = $path;
 			$this->params = $params;
@@ -254,6 +254,7 @@
 						$this->console("*****HEADERS*****");
 						$this->console($headers);
 					}
+					$this->console($headers);
 					curl_setopt($ch, CURLOPT_HTTPHEADER, $headers); 
 				} else {
 					if( $debug ){
@@ -265,21 +266,21 @@
 				curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
 				curl_setopt($ch, CURLOPT_TIMEOUT, 400); //timeout in seconds
 				$this->data = curl_exec($ch);
-
 				if( $debug ){
 					$this->console($this->data);
 				}
 				
 				$headers = curl_getinfo($ch, CURLINFO_HEADER_OUT);
+				$this->console($headers);
 				$content_type = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
 				$info = curl_getinfo( $ch );
+				$this->console($info);
 				$data = json_decode($this->data);
 				
 				$info["http_code"] =  intval($info["http_code"]);
 
 				if( !( $info["http_code"] >= 200 && $info["http_code"] < 300)  ){
 
-					$this->data = array();
 					//echo "HTTP CODE IS NOT 200";
 					if( !empty($data->Message) ){
 						$this->throwError($data->Message,$info["http_code"]);
@@ -288,9 +289,12 @@
 					} else if ( !empty($data->errors) ){
 						$this->throwError("");
 						$this->errors = $data->errors;
+					} else if (!empty($this->data)) {
+						//$this->data = $this->data;
 					} else {
 						$this->throwError("An error has occurred with no message.",$info["http_code"]);
 					}
+					if( empty($this->data) ){ $this->data = array(); }
 					return $this;
 				} else {
 
