@@ -202,14 +202,14 @@
     			}
 			}
 			
-			if( !empty($params["http_debug"]) ){
-				$this->console("debug\n");
-			}
-
 			/*********************************
 				handle remote HTTP(S) calls
 			*********************************/
 			if( isSet($components['host']) && $direct ){
+
+				if( !empty($params["http_debug"]) ){
+					$this->console("debug\n");
+				}
 
 				$timeout = 5;
 				$ch = curl_init();
