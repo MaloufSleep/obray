@@ -202,11 +202,6 @@
     			}
 			}
 
-			if( !empty($params["http_debug"]) ){
-				$this->console("debug\n");
-				$this->console($components);
-			}
-			
 			/*********************************
 				handle remote HTTP(S) calls
 			*********************************/
