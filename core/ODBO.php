@@ -900,7 +900,7 @@
 
         ********************************************************************/
 
-        public function run( $sql )
+        public function run( $sql, $bind=array() )
         {
 
             if (is_array($sql)) {
@@ -908,7 +908,7 @@
             }
             try {
                 $statement = $this->dbh->prepare($sql);
-                $result = $statement->execute();
+                $result = $statement->execute($bind);
                 $this->data = [];
                 if (preg_match("/^select/i", $sql)) {
                     $statement->setFetchMode(PDO::FETCH_OBJ);
