@@ -208,7 +208,6 @@
 			if( isSet($components['host']) && $direct ){
 
 				
-
 				$timeout = 5;
 				$ch = curl_init();
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
