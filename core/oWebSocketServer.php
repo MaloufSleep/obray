@@ -398,8 +398,6 @@
 		}
 
 		public function onParentLoop(){
-			
-			sleep(5);
 
 		}
 		
