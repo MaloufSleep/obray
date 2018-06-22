@@ -559,7 +559,7 @@
 				}
 
 				$request .= $new_content;
-				if( strlen($new_content) === 0 && strlen($request) !== 0 ){ return $request; }
+				//if( strlen($new_content) === 0 && strlen($request) !== 0 ){ return $request; }
 				$current = microtime(TRUE);
 				if( $timeout <= $current-$start ){ $this->debug("%s","\tSocket read timed out.\n","RedBold"); return FALSE; }
 				usleep(50000);
