@@ -424,7 +424,7 @@
 
 			//	1.	accept new socket
 			$this->debug("%s","\nAttempting to connect to a new socket.\n","YellowBold");
-			$new_socket = stream_socket_accept($socket,1);
+			$new_socket = @stream_socket_accept($socket,1);
 
 			//	2. 	handle error on socket accept
 			if( !$new_socket ){
@@ -552,7 +552,7 @@
 			$request = ''; $start = microtime(TRUE);
 			while( !feof($socket) ){
 				$new_content = fread($socket, $length);
-
+				$this->console("Read: ".$new_content);
 				if( !empty($new_content) ){
 					$fields = unpack( 'Cheader/Csize' , substr($new_content, 0, 16) );
 					$fields["size"] -= 128;
