@@ -78,7 +78,7 @@
 				try{
 
 					$context = 	stream_context_create( array( "ssl" => array( 
-						"verify_peer" => FALSE,
+						"verify_peer" => TRUE,
 						"local_cert"=>__WEB_SOCKET_CERT__, 
 						"local_pk"=>__WEB_SOCKET_KEY__, 
 						"passphrase" => __WEB_SOCKET_KEY_PASS__,
