@@ -78,10 +78,10 @@
 				try{
 
 					$context = 	stream_context_create( array( "ssl" => array( 
-						"local_cert"=>__WEB_SOCKET_CERT__,
-						"local_pk"=>__WEB_SOCKET_KEY__,
+						"local_cert"=>__WEB_SOCKET_CERT__, 
+						"local_pk"=>__WEB_SOCKET_KEY__, 
 						"passphrase" => __WEB_SOCKET_KEY_PASS__,
-						
+						"ciphers" => "DEFAULT:!SSLv2:!SSLv3",
 						"disable_compression" => TRUE,
 						"SNI_enabled" => TRUE,
 					) ) );
@@ -424,7 +424,7 @@
 
 			//	1.	accept new socket
 			$this->debug("%s","\nAttempting to connect to a new socket.\n","YellowBold");
-			$new_socket = stream_socket_accept($socket,1);
+			$new_socket = @stream_socket_accept($socket,1);
 
 			//	2. 	handle error on socket accept
 			if( !$new_socket ){
