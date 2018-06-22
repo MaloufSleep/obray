@@ -552,14 +552,14 @@
 			$request = ''; $start = microtime(TRUE);
 			while( !feof($socket) ){
 				$new_content = fread($socket, $length);
-				$this->console("Read: ".$new_content);
+				$this->console($new_content);
 				if( !empty($new_content) ){
 					$fields = unpack( 'Cheader/Csize' , substr($new_content, 0, 16) );
 					$fields["size"] -= 128;
 				}
 
 				$request .= $new_content;
-				//if( strlen($new_content) === 0 && strlen($request) !== 0 ){ return $request; }
+				if( strlen($new_content) === 0 && strlen($request) !== 0 ){ return $request; }
 				$current = microtime(TRUE);
 				if( $timeout <= $current-$start ){ $this->debug("%s","\tSocket read timed out.\n","RedBold"); return FALSE; }
 				usleep(50000);
