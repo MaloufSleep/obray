@@ -78,12 +78,12 @@
 				try{
 
 					$context = 	stream_context_create( array( "ssl" => array( 
+						"verify_peer" => FALSE,
 						"local_cert"=>__WEB_SOCKET_CERT__, 
 						"local_pk"=>__WEB_SOCKET_KEY__, 
 						"passphrase" => __WEB_SOCKET_KEY_PASS__,
 						"ciphers" => "HIGH:!SSLv2:!SSLv3",
-						"disable_compression" => TRUE,
-						"SNI_enabled" => TRUE,
+						"disable_compression" => TRUE
 					) ) );
 
 				} catch( Exception $err ){
