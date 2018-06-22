@@ -76,7 +76,7 @@
 
 				$protocol = "ssl";
 				try{
-					exit();
+
 					$context = 	stream_context_create( array( "ssl" => array( 
 						"verify_peer" => FALSE,
 						"local_cert"=>__WEB_SOCKET_CERT__, 
