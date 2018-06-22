@@ -159,7 +159,7 @@
 						$this->socketNumbers[] = $pid;
 						// removes original socket from the changed array (so we don't keep looking for a new connections)
 						$found_socket = array_search($this->socket, $changed);
-						$this->onForked();
+						//$this->onForked();
 						unset($changed[$found_socket]);
 						usleep(20000);
 					} else if( $pid === 0 ) {
