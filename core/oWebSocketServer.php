@@ -82,7 +82,7 @@
 						"local_cert"=>__WEB_SOCKET_CERT__, 
 						"local_pk"=>__WEB_SOCKET_KEY__, 
 						"passphrase" => __WEB_SOCKET_KEY_PASS__,
-						"ciphers" => "HIGH",//"HIGH:!SSLv2:!SSLv3",
+						"ciphers" => "MEDIUM",//"HIGH:!SSLv2:!SSLv3",
 						"disable_compression" => TRUE
 					) ) );
 
