@@ -159,7 +159,7 @@
 						$this->socketNumbers[] = $pid;
 						// removes original socket from the changed array (so we don't keep looking for a new connections)
 						$found_socket = array_search($this->socket, $changed);
-						//$this->onForked();
+						$this->onForked();
 						unset($changed[$found_socket]);
 						usleep(20000);
 					} else if( $pid === 0 ) {
@@ -424,7 +424,7 @@
 
 			//	1.	accept new socket
 			$this->debug("%s","\nAttempting to connect to a new socket.\n","YellowBold");
-			$new_socket = @stream_socket_accept($socket,1);
+			$new_socket = stream_socket_accept($socket,1);
 
 			//	2. 	handle error on socket accept
 			if( !$new_socket ){
