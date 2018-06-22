@@ -81,7 +81,7 @@
 						"local_cert"=>__WEB_SOCKET_CERT__,
 						"local_pk"=>__WEB_SOCKET_KEY__,
 						"passphrase" => __WEB_SOCKET_KEY_PASS__,
-						"cipher" => "HIGH",
+						"cipher" => "DEFAULT",
 						"disable_compression" => TRUE,
 						"SNI_enabled" => TRUE,
 					) ) );
