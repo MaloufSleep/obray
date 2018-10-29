@@ -26,7 +26,7 @@
 
 	*****************************************************************************/
 
-	if (!class_exists( 'OObject' )) { die(); }
+//	if (!class_exists( 'OObject' )) { die(); }
 
 	/********************************************************************************************************************
 
@@ -36,7 +36,10 @@
 
 	Class ODBO extends OObject {
 
-	    public $dbh;
+        /**
+         * @var PDO $dbh PDO Connection
+         */
+        public $dbh;
 	    public $enable_system_columns = TRUE;
 
 	    public function __construct(){
@@ -902,7 +905,6 @@
 
         public function run( $sql, $bind=array() )
         {
-
             if (is_array($sql)) {
                 $sql = $sql["sql"];
             }
@@ -912,7 +914,6 @@
                 $this->data = [];
                 if (preg_match("/^select/i", $sql)) {
                     $statement->setFetchMode(PDO::FETCH_OBJ);
-
                     while ($row = $statement->fetch()) {
                         $this->data[] = $row;
                     }
@@ -928,10 +929,9 @@
                 $this->throwError($e);
                 $this->logError(oCoreProjectEnum::ODBO, $e);
             }
-
             return $this;
         }
-
+		
 		public function explain( $sql ){
 
 			$this->console( 'EXPLAIN ' . $sql );

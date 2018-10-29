@@ -1,4 +1,5 @@
 <?php
+
 	/*****************************************************************************
 
 	The MIT License (MIT)
@@ -25,7 +26,7 @@
 
 	*****************************************************************************/
 
-	if (!class_exists( 'OObject' )) { die(); }
+//	if (!class_exists( 'OObject' )) { die(); }
 
 	/******************************************************
 	    SETUP DB CONNECTION - DO NOT MODIFY
@@ -58,17 +59,14 @@
 	}
 
 	if (!function_exists('getallheaders')){
-        function getallheaders()
-        {
-               $headers = [];
-           foreach ($_SERVER as $name => $value)
-           {
-               if (substr($name, 0, 5) == 'HTTP_')
-               {
-                   $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
-               }
-           }
-           return $headers;
+        function getallheaders(){
+        	$headers = array();
+			foreach ($_SERVER as $name => $value){
+				if (substr($name, 0, 5) == 'HTTP_'){
+					$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+				}
+			}
+			return $headers;
         }
     }
 
@@ -173,7 +171,7 @@
 		***********************************************************************/
 
 		public function route( $path , $params = array(), $direct = TRUE ) {
-			
+
 			if( !$direct ){ $params = array_merge($params,$_GET,$_POST); }
 			$cmd = $path;
 			$this->params = $params;
@@ -184,14 +182,13 @@
     			if( !empty($components["scheme"]) && ( $components["scheme"] == "http" || $components["scheme"] == "https" ) ){
     				$path = $components["scheme"] ."://". $components["host"] . (!empty($components["port"])?':'.$components["port"]:'') . $components["path"];
     			}
-			}
+    		}
 
 			/*********************************
 				handle remote HTTP(S) calls
 			*********************************/
 			if( isSet($components['host']) && $direct ){
 
-				
 				$timeout = 5;
 				$ch = curl_init();
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
@@ -235,9 +232,7 @@
 							curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
 						}
 					}
-				} else if( !empty($params['http_method']) && $params['http_method'] == 'patch' ){
-					curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
-					curl_setopt($ch, CURLOPT_POSTFIELDS, $params["body"]);
+
 				} else {
 					if( !empty($params["http_method"]) ){ unset($params["http_method"]); }
 					if( !empty($components["query"]) ){
@@ -255,7 +250,6 @@
 						$this->console("*****HEADERS*****");
 						$this->console($headers);
 					}
-					$this->console($headers);
 					curl_setopt($ch, CURLOPT_HTTPHEADER, $headers); 
 				} else {
 					if( $debug ){
@@ -267,21 +261,21 @@
 				curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
 				curl_setopt($ch, CURLOPT_TIMEOUT, 400); //timeout in seconds
 				$this->data = curl_exec($ch);
+
 				if( $debug ){
 					$this->console($this->data);
 				}
 				
 				$headers = curl_getinfo($ch, CURLINFO_HEADER_OUT);
-				$this->console($headers);
 				$content_type = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
 				$info = curl_getinfo( $ch );
-				$this->console($info);
 				$data = json_decode($this->data);
 				
 				$info["http_code"] =  intval($info["http_code"]);
 
 				if( !( $info["http_code"] >= 200 && $info["http_code"] < 300)  ){
 
+					$this->data = array();
 					//echo "HTTP CODE IS NOT 200";
 					if( !empty($data->Message) ){
 						$this->throwError($data->Message,$info["http_code"]);
@@ -290,12 +284,9 @@
 					} else if ( !empty($data->errors) ){
 						$this->throwError("");
 						$this->errors = $data->errors;
-					} else if (!empty($this->data)) {
-						//$this->data = $this->data;
 					} else {
 						$this->throwError("An error has occurred with no message.",$info["http_code"]);
 					}
-					if( empty($this->data) ){ $this->data = array(); }
 					return $this;
 				} else {
 
@@ -309,22 +300,27 @@
 				}
 
 			} else {
+
 	    		/*********************************
 	    			Parse Path & setup params
 	    		*********************************/
 
 	    		$_REQUEST = $params;
-
-				$path_array = preg_split('[/]',$components['path'],NULL,PREG_SPLIT_NO_EMPTY);
+				
+				$path_array = explode('/',$components['path']);
+				$path_array = array_filter($path_array);
+				$path_array = array_values($path_array);
+				
 				$base_path = $this->getBasePath($path_array);
-
-
+				
 				/*********************************
 					Validate Remote Application
 				*********************************/
 
-				$this->validateRemoteApplication($direct);
-
+				if( $direct === FALSE ){
+					$this->validateRemoteApplication($direct);
+				}
+				
 				/*********************************
 					SET CONTENT TYPE FROM ROUTE
 				*********************************/
@@ -336,12 +332,11 @@
 				/*********************************
 					CALL FUNCTION
 				*********************************/
-
+				
 				if( empty($base_path) && count($path_array) == 1 && !empty($this->object) && $this->object != $path_array[0] ){
-
 					return $this->executeMethod($path,$path_array,$direct,$params);
 				}
-
+				
 				/*********************************
 					CREATE OBJECT
 				*********************************/
@@ -378,6 +373,20 @@
 			}
 		}
 
+		private function _namespacedClassExists($path,$obj_name){
+            $namespace_components = explode("/",$this->path);
+            array_pop($namespace_components);
+            $namespace_str = implode("/", $namespace_components);
+            $namespace = str_replace("/","\\", str_replace(__OBRAY_NAMESPACE_ROOT__,'',$namespace_str));
+            $namespaced_path = "\\".$namespace."\\".$obj_name;
+            $exists = class_exists($namespaced_path);
+            if($exists){
+            	$this->namespaced_path = $namespaced_path;
+            	return true;
+			}
+			return false;
+		}
+
 		/***********************************************************************
 
 			CREATE OBJECT
@@ -392,7 +401,7 @@
 			if( empty($path_array) && empty($this->object) && empty($base_path)){
 				if(empty($path_array)){	$path_array[] = "index";	}
 			}
-
+			
 			while(count($path_array)>0){
 
 				if( empty($base_path) ){
@@ -415,11 +424,21 @@
 					if( empty($path) ){ $path = "/index/"; }
 				}
 
+				
 				if ( !empty($objectType) ) {
 
+					$class_exists = false;
 					require_once $this->path;
-					if (!class_exists( $obj_name )) { $this->throwError("File exists, but could not find object: $obj_name",404,'notfound'); return $this; } else {
+					
+					if (class_exists( $obj_name )) {
+						$class_exists = true;
+					}
+					else if($this->_namespacedClassExists($this->path, $obj_name)){
+						$class_exists = true;
+						$obj_name = $this->namespaced_path;
+					}
 
+					if($class_exists) {
 						try{
 
 				    		//	CREATE OBJECT
@@ -449,6 +468,9 @@
 				       	}
 
 					}
+					else {
+                        $this->throwError("File exists, but could not find object: $obj_name",404,'notfound'); return $this;
+					}
 					break;
 				} else {
 					$rPath[] = strtolower($obj_name);
@@ -456,7 +478,7 @@
 				}
 
 			}
-			//exit();
+			
 			$this->throwError('Route not found object: '.$path,404,'notfound'); return $this;
 
 		}
@@ -475,7 +497,30 @@
 				try {
 					$params = array_merge($this->checkPermissions($path, $direct), $params);
 					if (!$this->isError()) {
-						$this->$path($params);
+						
+						$reflector = new ReflectionMethod($this, $path);
+						$function_parameters = $reflector->getParameters();
+						
+						if( count($function_parameters) === 1 && $function_parameters[0]->name === 'params' ){
+							$this->$path($params);
+						} else if( count($function_parameters) > 0 ) {
+
+							$parameters = array();
+							forEach( $function_parameters as $function_parameter ){
+								if( !empty($params[$function_parameter->name]) ){
+									$parameters[] = $params[$function_parameter->name];
+								} else if( !$function_parameter->isOptional() ) {
+									$this->throwError("Missing method parameter.", 500, $function_parameter->name );
+								}
+							}
+							if( !empty($parameters) && empty($this->errors) ){
+								call_user_func_array(array($this, $path), $parameters);
+							}
+							
+						} else {
+							$this->$path();
+						}
+						
 					}
 				} catch (Exception $e) {
 					$this->throwError($e->getMessage());
@@ -634,8 +679,11 @@
 		***********************************************************************/
 
 		private function getBasePath(&$path_array){
+			$base_path = '';
 			$routes = unserialize(__OBRAY_ROUTES__);
-			if(!empty($path_array) && isSet($routes[$path_array[0]])){ $base_path = $routes[array_shift($path_array)]; } else { $base_path = ''; }
+			if(!empty($path_array) && isSet($routes[$path_array[0]])){ 
+				$base_path = $routes[array_shift($path_array)]; 
+			}
 			return $base_path;
 		}
 
@@ -851,32 +899,6 @@
 			$logger->logDebug($oProjectEnum, $message);
 			return;
 		}
-
-		public function getMessageQueue( $queue ){
-			$this->message_queue = msg_get_queue($queue);
-		}
-
-		//public function messageQueueSend( $msgType, $message ){
-		//
-		//
-		//	if( empty($this->message_queue) || !msg_send( $this->message_queue, $msgType, $message, FALSE, TRUE, $error_code ) ){
-		//		$this->throwError("Error (".$error_code."): Unable to queue message.");
-		//	}
-		//}
-
-		//function messageQueueReceive( $msgType ){
-		//	$received_type = 0;
-		//	$error_code;
-		//	$message = FALSE;
-		//	if( empty($this->message_queue) || msg_receive( $this->message_queue, $msgType, $received_type, 8192000, $message, FALSE, MSG_IPC_NOWAIT, $error_code ) ){
-		//		return $message;
-		//	} else {
-		//		if( $error_code !== 42 ){
-		//			$this->console("%s","Error receiving message from queue (".$error_code.")!\n","RedBold");
-		//		}
-		//		return FALSE;
-		//	}
-		//}
 
 	}
 ?>

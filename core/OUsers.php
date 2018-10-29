@@ -1,5 +1,6 @@
 <?php
 
+
 	/*****************************************************************************
 
 	The MIT License (MIT)
@@ -26,7 +27,7 @@
 	
 	*****************************************************************************/
 
-	if (!class_exists( 'OObject' )) { die(); }
+//	if (!class_exists( 'OObject' )) { die(); }
 
 	/********************************************************************************************************************
 
@@ -34,13 +35,13 @@
 
 	********************************************************************************************************************/
 	
-	Class OUsers extends ODBO{
+	Class oUsers extends ODBO{
 
 		public function __construct(){
 			
 			parent::__construct();
 
-			$this->table = 'ousers';
+			$this->table = 'oUsers';
 			$this->table_definition = array(
 				'ouser_id' => 				array('primary_key' => TRUE ),
 				'ouser_first_name' => 		array('data_type'=>'varchar(128)',		'required'=>FALSE,	'label'=>'First Name',		'error_message'=>'Please enter the user\'s first name'),

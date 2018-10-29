@@ -1,6 +1,6 @@
 <?php
 
-if (!class_exists( 'OObject' )) { die(); }
+//if (!class_exists( 'OObject' )) { die(); }
 
 class oCoreProjectEnum {
     const ODBO = 'ODBO';
