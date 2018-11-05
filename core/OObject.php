@@ -451,17 +451,18 @@
                 if($namespacedModelsDirectoryExists){
                 	$this->namespaced_model_path = __OBRAY_SITE_ROOT__.$namespacedModelsPath.implode('/',$path_array).'/'.$obj_name.'.php';
 				}
-				if($deprecatedModelDirectoryExists){
+//				if($deprecatedModelDirectoryExists){
                 	$this->deprecated_model_path = $base_path . implode('/',$path_array).'/'.$obj_name.'.php';
-				}
-				$this->model_path = $base_path . implode('/',$path_array).'/'.$obj_name.'.php';
+//				}
+//				$this->model_path = $base_path . implode('/',$path_array).'/'.$obj_name.'.php';
 
-				if( $deprecatedModelDirectoryExists && file_exists( $this->deprecated_model_path ) ){
-					$objectType = "model";
-					$this->path = $this->deprecated_model_path;
-				} else if($namespacedModelsDirectoryExists && file_exists($this->namespaced_model_path)){
+                if($namespacedModelsDirectoryExists && file_exists($this->namespaced_model_path)){
                     $objectType = "model";
                     $this->path = $this->namespaced_model_path;
+                }
+				else if( file_exists( $this->deprecated_model_path ) ){
+					$objectType = "model";
+					$this->path = $this->deprecated_model_path;
 				} else if( $namespacedControllersDirectoryExists && file_exists($this->namespaced_controller_path) ){
 					$objectType = "controller";
 					$obj_name = "c".str_replace(' ','',ucWords( str_replace('-',' ',$obj_name) ) );
