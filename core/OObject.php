@@ -378,6 +378,20 @@
 			}
 		}
 
+        private function _namespacedClassExists($path,$obj_name){
+            $namespace_components = explode("/",$this->path);
+            array_pop($namespace_components);
+            $namespace_str = implode("/", $namespace_components);
+            $namespace = str_replace("/","\\", str_replace(__OBRAY_NAMESPACE_ROOT__,'',$namespace_str));
+            $namespaced_path = "\\".$namespace."\\".$obj_name;
+            $exists = class_exists($namespaced_path);
+            if($exists){
+                $this->namespaced_path = $namespaced_path;
+                return true;
+            }
+            return false;
+        }
+
 		/***********************************************************************
 
 			CREATE OBJECT
@@ -387,6 +401,15 @@
 		private function createObject($path_array,$path,$base_path,&$params,$direct){
 			
 			$path = '';
+            $deprecatedControllersDirectoryExists = false;
+            $deprecatedModelDirectoryExists = false;
+
+            $namespacedControllersDirectoryExists = false;
+            $namespacedModelsDirectoryExists = false;
+
+			$deprecatedControllersPath = "controllers/";
+			$namespacedControllersPath = "c/";
+			$namespacedModelsPath = "m/";
 			$rPath = array();
 
 			if( empty($path_array) && empty($this->object) && empty($base_path)){
@@ -395,30 +418,79 @@
 
 			while(count($path_array)>0){
 
-				if( empty($base_path) ){
-					if(is_dir(__OBRAY_SITE_ROOT__.'controllers/'.implode('/',$path_array))){	$path_array[] = $path_array[count($path_array)-1];		}
-				}
+
 
 				$obj_name = array_pop($path_array);
-				$this->controller_path = __OBRAY_SITE_ROOT__."controllers/".implode('/',$path_array).'/c'.str_replace(' ','',ucWords( str_replace('-',' ',$obj_name) ) ).'.php';
+
+                if( empty($base_path) ){
+                    if(is_dir(__OBRAY_SITE_ROOT__.$deprecatedControllersPath.implode('/',$path_array))){
+                        $deprecatedControllersDirectoryExists = true;
+                    }
+                    if(is_dir(__OBRAY_SITE_ROOT__.$namespacedControllersPath.implode('/',$path_array))){
+                        if(!$deprecatedControllersDirectoryExists){
+                            $path_array[] = $path_array[count($path_array)-1];
+                        }
+                        $namespacedControllersDirectoryExists = true;
+                    }
+                }
+                else {
+                    if(is_dir($base_path.implode('/',$path_array))){
+                        $deprecatedModelDirectoryExists = true;
+                    }
+                    if(is_dir(__OBRAY_SITE_ROOT__.$namespacedModelsPath.implode('/',$path_array))){
+                        $namespacedModelsDirectoryExists = true;
+                    }
+				}
+
+				if($namespacedControllersDirectoryExists){
+					$this->namespaced_controller_path = __OBRAY_SITE_ROOT__.$namespacedControllersPath.implode('/',$path_array).'/c'.str_replace(' ','',ucWords( str_replace('-',' ',$obj_name) ) ).'.php';
+				}
+				if($deprecatedControllersDirectoryExists){
+                    $this->deprecated_controller_path = __OBRAY_SITE_ROOT__.$deprecatedControllersPath.implode('/',$path_array).'/c'.str_replace(' ','',ucWords( str_replace('-',' ',$obj_name) ) ).'.php';
+                }
+                if($namespacedModelsDirectoryExists){
+                	$this->namespaced_model_path = __OBRAY_SITE_ROOT__.$namespacedModelsPath.implode('/',$path_array).'/'.$obj_name.'.php';
+				}
+				if($deprecatedModelDirectoryExists){
+                	$this->deprecated_model_path = $base_path . implode('/',$path_array).'/'.$obj_name.'.php';
+				}
 				$this->model_path = $base_path . implode('/',$path_array).'/'.$obj_name.'.php';
 
-				if( file_exists( $this->model_path ) ){
+				if( $deprecatedModelDirectoryExists && file_exists( $this->deprecated_model_path ) ){
 					$objectType = "model";
-					$this->path = $this->model_path;
-				} else if( file_exists( $this->controller_path ) ){
+					$this->path = $this->deprecated_model_path;
+				} else if($namespacedModelsDirectoryExists && file_exists($this->namespaced_model_path)){
+                    $objectType = "model";
+                    $this->path = $this->namespaced_model_path;
+				} else if( $namespacedControllersDirectoryExists && file_exists($this->namespaced_controller_path) ){
 					$objectType = "controller";
 					$obj_name = "c".str_replace(' ','',ucWords( str_replace('-',' ',$obj_name) ) );
-					$this->path = $this->controller_path;
+					$this->path = $this->namespaced_controller_path;
 					// include the root controller
 					if( file_exists( __OBRAY_SITE_ROOT__ . "controllers/cRoot.php" ) ){ require_once __OBRAY_SITE_ROOT__."controllers/cRoot.php"; }
 					if( empty($path) ){ $path = "/index/"; }
-				}
+				} else if( $deprecatedControllersDirectoryExists && file_exists($this->deprecated_controller_path) ){
+                    $objectType = "controller";
+                    $obj_name = "c".str_replace(' ','',ucWords( str_replace('-',' ',$obj_name) ) );
+                    $this->path = $this->deprecated_controller_path;
+                    // include the root controller
+                    if( file_exists( __OBRAY_SITE_ROOT__ . "controllers/cRoot.php" ) ){ require_once __OBRAY_SITE_ROOT__."controllers/cRoot.php"; }
+                    if( empty($path) ){ $path = "/index/"; }
+                }
 
 				if ( !empty($objectType) ) {
 
 					require_once $this->path;
-					if (!class_exists( $obj_name )) { $this->throwError("File exists, but could not find object: $obj_name",404,'notfound'); return $this; } else {
+
+                    if (class_exists( $obj_name )) {
+                        $class_exists = true;
+                    }
+                    else if($this->_namespacedClassExists($this->path, $obj_name)){
+                        $class_exists = true;
+                        $obj_name = $this->namespaced_path;
+                    }
+
+					if ($class_exists){
 
 						try{
 
@@ -635,7 +707,11 @@
 
 		private function getBasePath(&$path_array){
 			$routes = unserialize(__OBRAY_ROUTES__);
-			if(!empty($path_array) && isSet($routes[$path_array[0]])){ $base_path = $routes[array_shift($path_array)]; } else { $base_path = ''; }
+			if(!empty($path_array) && isSet($routes[$path_array[0]])){
+				$base_path = $routes[array_shift($path_array)];
+			} else {
+				$base_path = '';
+			}
 			return $base_path;
 		}
 
