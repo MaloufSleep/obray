@@ -380,6 +380,9 @@
 
         private function _namespacedClassExists($path,$obj_name){
             $namespace_components = explode("/",$this->path);
+            $namespace_components  = array_filter($namespace_components, function($item){
+            	return $item !== "app";
+			});
             array_pop($namespace_components);
             $namespace_str = implode("/", $namespace_components);
             $namespace = str_replace("/","\\", str_replace(__OBRAY_NAMESPACE_ROOT__,'',$namespace_str));
@@ -401,15 +404,10 @@
 		private function createObject($path_array,$path,$base_path,&$params,$direct){
 			
 			$path = '';
-            $deprecatedControllersDirectoryExists = false;
-            $deprecatedModelDirectoryExists = false;
-
-            $namespacedControllersDirectoryExists = false;
-            $namespacedModelsDirectoryExists = false;
 
 			$deprecatedControllersPath = "controllers/";
-			$namespacedControllersPath = "c/";
-			$namespacedModelsPath = "m/";
+			$namespacedControllersPath = "app/controllers/";
+			$namespacedModelsPath = "app/models/";
 			$rPath = array();
 
 			if( empty($path_array) && empty($this->object) && empty($base_path)){
