@@ -418,70 +418,63 @@
 
 			while(count($path_array)>0){
 
-
-
-				$obj_name = array_pop($path_array);
-
-                if( empty($base_path) ){
+                if(empty($base_path)){
                     if(is_dir(__OBRAY_SITE_ROOT__.$deprecatedControllersPath.implode('/',$path_array))){
-                        $deprecatedControllersDirectoryExists = true;
+                        $path_array[] = $path_array[(count($path_array)-1)];
                     }
                     if(is_dir(__OBRAY_SITE_ROOT__.$namespacedControllersPath.implode('/',$path_array))){
                         if(!$deprecatedControllersDirectoryExists){
-                            $path_array[] = $path_array[count($path_array)-1];
+                            $path_array[] = $path_array[(count($path_array)-1)];
                         }
-                        $namespacedControllersDirectoryExists = true;
                     }
                 }
-                else {
-                    if(is_dir($base_path.implode('/',$path_array))){
-                        $deprecatedModelDirectoryExists = true;
-                    }
-                    if(is_dir(__OBRAY_SITE_ROOT__.$namespacedModelsPath.implode('/',$path_array))){
-                        $namespacedModelsDirectoryExists = true;
-                    }
-				}
 
-				if($namespacedControllersDirectoryExists){
-					$this->namespaced_controller_path = __OBRAY_SITE_ROOT__.$namespacedControllersPath.implode('/',$path_array).'/c'.str_replace(' ','',ucWords( str_replace('-',' ',$obj_name) ) ).'.php';
-				}
-				if($deprecatedControllersDirectoryExists){
-                    $this->deprecated_controller_path = __OBRAY_SITE_ROOT__.$deprecatedControllersPath.implode('/',$path_array).'/c'.str_replace(' ','',ucWords( str_replace('-',' ',$obj_name) ) ).'.php';
-                }
-                if($namespacedModelsDirectoryExists){
-                	$this->namespaced_model_path = __OBRAY_SITE_ROOT__.$namespacedModelsPath.implode('/',$path_array).'/'.$obj_name.'.php';
-				}
-//				if($deprecatedModelDirectoryExists){
-                	$this->deprecated_model_path = $base_path . implode('/',$path_array).'/'.$obj_name.'.php';
-//				}
-//				$this->model_path = $base_path . implode('/',$path_array).'/'.$obj_name.'.php';
 
-                if($namespacedModelsDirectoryExists && file_exists($this->namespaced_model_path)){
+                $obj_name = array_pop($path_array);
+
+				$this->namespaced_controller_path = __OBRAY_SITE_ROOT__.$namespacedControllersPath.implode('/',$path_array).'/c'.str_replace(' ','',ucWords( str_replace('-',' ',$obj_name) ) ).'.php';
+				$this->deprecated_controller_path = __OBRAY_SITE_ROOT__.$deprecatedControllersPath.implode('/',$path_array).'/c'.str_replace(' ','',ucWords( str_replace('-',' ',$obj_name) ) ).'.php';
+
+				$this->namespaced_model_path = __OBRAY_SITE_ROOT__.$namespacedModelsPath.implode('/',$path_array).'/'.$obj_name.'.php';
+				$this->deprecated_model_path = $base_path . implode('/',$path_array).'/'.$obj_name.'.php';
+
+                if(file_exists($this->namespaced_model_path)){
                     $objectType = "model";
                     $this->path = $this->namespaced_model_path;
                 }
-				else if( file_exists( $this->deprecated_model_path ) ){
+				else if(file_exists($this->deprecated_model_path)){
 					$objectType = "model";
 					$this->path = $this->deprecated_model_path;
-				} else if( $namespacedControllersDirectoryExists && file_exists($this->namespaced_controller_path) ){
+				}
+				else if(file_exists($this->namespaced_controller_path) ){
 					$objectType = "controller";
 					$obj_name = "c".str_replace(' ','',ucWords( str_replace('-',' ',$obj_name) ) );
 					$this->path = $this->namespaced_controller_path;
 					// include the root controller
-					if( file_exists( __OBRAY_SITE_ROOT__ . "controllers/cRoot.php" ) ){ require_once __OBRAY_SITE_ROOT__."controllers/cRoot.php"; }
-					if( empty($path) ){ $path = "/index/"; }
-				} else if( $deprecatedControllersDirectoryExists && file_exists($this->deprecated_controller_path) ){
+					if(file_exists(__OBRAY_SITE_ROOT__ . "controllers/cRoot.php")){
+						require_once __OBRAY_SITE_ROOT__."controllers/cRoot.php";
+					}
+					if(empty($path)){
+						$path = "/index/";
+					}
+				}
+				else if(file_exists($this->deprecated_controller_path)){
                     $objectType = "controller";
                     $obj_name = "c".str_replace(' ','',ucWords( str_replace('-',' ',$obj_name) ) );
                     $this->path = $this->deprecated_controller_path;
                     // include the root controller
-                    if( file_exists( __OBRAY_SITE_ROOT__ . "controllers/cRoot.php" ) ){ require_once __OBRAY_SITE_ROOT__."controllers/cRoot.php"; }
-                    if( empty($path) ){ $path = "/index/"; }
+                    if(file_exists(__OBRAY_SITE_ROOT__ . "controllers/cRoot.php")){
+                    	require_once __OBRAY_SITE_ROOT__."controllers/cRoot.php";
+                    }
+                    if(empty($path)){
+                    	$path = "/index/";
+                    }
                 }
 
-				if ( !empty($objectType) ) {
+				if (!empty($objectType)){
 
 					require_once $this->path;
+					$class_exists = false;
 
                     if (class_exists( $obj_name )) {
                         $class_exists = true;
@@ -508,11 +501,14 @@
 				    		$params = array_merge($obj->checkPermissions('object',$direct),$params);
 
 				    		//	SETUP DATABASE CONNECTION
-				    		if( method_exists($obj,'setDatabaseConnection') ){ $obj->setDatabaseConnection(getDatabaseConnection()); }
+				    		if(method_exists($obj,'setDatabaseConnection')){
+				    			$obj->setDatabaseConnection(getDatabaseConnection());
+				    		}
 
 				    		//	ROUTE REMAINING PATH - function calls
-							if(!empty($path))
-								$obj->route($path,$params,$direct);
+							if(!empty($path)){
+                                $obj->route($path,$params,$direct);
+                            }
 
 					        return $obj;
 
