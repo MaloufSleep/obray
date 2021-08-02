@@ -37,7 +37,9 @@
 	Class ODBO extends OObject {
 
 	    public $dbh;
-	    public $enable_system_columns = TRUE;
+		public $enable_system_columns = TRUE;
+
+		private $shouldUseReader = true;
 
 	    public function __construct(){
 
@@ -117,6 +119,12 @@
 			if( !isSet($this->table) || $this->table == '' ){ return; }
 			if(__OBRAY_DEBUG_MODE__){ $this->scriptTable(); $this->alterTable(); }
 
+		}
+
+		public function setReaderDatabaseConnection($reader)
+		{
+			$this->reader = $reader;
+			if( !isSet($this->table) || $this->table == '' ){ return; }
 	    }
 
         /*************************************************************************************************************
@@ -284,7 +292,7 @@
 
 					if( isSet($this->required[$key]) ){ unset($this->required[$key]); }
 					if( isSet($def['data_type']) && !empty($this->data_types[$data_type['data_type']]['validation_regex']) && !preg_match($this->data_types[$data_type['data_type']]['validation_regex'],$params[$key]) && $params[$key] == NULL ){
-					   $this->throwError(isSet($def['error_message'])?$def['error_message']:isSet($def['label'])?$def['label'].' is invalid.':$key.' is invalid.','500',$key);
+					   $this->throwError((isSet($def['error_message'])?$def['error_message']:isSet($def['label']))?$def['label'].' is invalid.':$key.' is invalid.','500',$key);
 					}
 
 					if( isSet($def['data_type']) && $def['data_type'] == 'password' ){ $salt = '$2a$12$'.$this->generateToken(); $data[$key] = crypt($params[$key],$salt); }
@@ -299,7 +307,7 @@
         	if( !empty($this->required) ){
 	        	forEach($this->required as $key => $value){
 	        		$def = $this->table_definition[$key];
-		        	$this->throwError(isSet($def['error_message'])?$def['error_message']:isSet($def['label'])?$key.' is required.':$key.' is required.','500',$key);
+		        	$this->throwError((isSet($def['error_message'])?$def['error_message']:isSet($def['label']))?$key.' is required.':$key.' is required.','500',$key);
 	        	}
         	}
 
@@ -322,15 +330,20 @@
         		} else {
         			$statement->bindValue($key, $dati);
         		}
-        	}
-        	$this->script = $statement->execute();
+			}
+			try {
+				$this->script = $statement->execute();
+			} catch (\Exception $e){
+				$this->script = $this->handleDBError($e, $statement);
+			}
         	if( empty($this->is_transaction) ){
 				$get_params = array( $this->primary_key_column => $this->dbh->lastInsertId() );
 				if( !empty($option_is_set) ){ $get_params["with"] = "options"; }
-				$this->get( $get_params );
+				$this->shouldUseReader = false;
+				$this->get( $get_params);
 			}
 
-        }
+		}
 
         /********************************************************************
             UPDATE function
@@ -366,11 +379,11 @@
 		        	$data_type = $this->getDataType($def);
 
 					if( isSet($def['required']) && $def['required'] === TRUE && (!isSet($params[$key]) || $params[$key] === NULL || $params[$key] === '') ){
-						$this->throwError(isSet($def['error_message'])?$def['error_message']:isSet($def['label'])?$def['label'].' is required.':$key.' is required.',500,$key);
+						$this->throwError((isSet($def['error_message'])?$def['error_message']:isSet($def['label']))?$def['label'].' is required.':$key.' is required.',500,$key);
 					}
 
 					if( (isSet($def['data_type']) && !empty($this->data_types[$data_type['data_type']]['validation_regex']) && !preg_match($this->data_types[$data_type['data_type']]['validation_regex'],$params[$key])) && $params[$key] == NULL ){
-						$this->throwError(isSet($def['error_message'])?$def['error_message']:isSet($def['label'])?$def['label'].' is invalid.':$key.' is invalid.',500,$key);
+						$this->throwError((isSet($def['error_message'])?$def['error_message']:isSet($def['label']))?$def['label'].' is invalid.':$key.' is invalid.',500,$key);
 					}
 
 					if( isSet($def['data_type']) && $def['data_type'] == 'password' ){ $salt = '$2a$12$'.$this->generateToken(); $data[$key] = crypt($params[$key],$salt); }
@@ -404,12 +417,17 @@
         			$statement->bindValue($key, $dati);
         		}
         	}
-        	$this->script = $statement->execute();
+        	try {
+				$this->script = $statement->execute();
+			} catch (\Exception $e){
+				$this->script = $this->handleDBError($e, $statement);
+			}
 
         	if( empty($this->is_transaction) ){
 				$get_params = array($this->primary_key_column=>$params[$this->primary_key_column]);
 				if( !empty($option_is_set) ){ $get_params["with"] = "options"; }
-				$this->get( $get_params );
+				$this->shouldUseReader = false;
+				$this->get( $get_params);
 			}
 			
 
@@ -434,9 +452,11 @@
         	$this->sql  = ' DELETE FROM ' . $this->table . $this->where;
         	$statement = $this->dbh->prepare($this->sql);
         	forEach($values as $value){ if( is_integer($value) ){ $statement->bindValue($value['key'], trim($value['value']), PDO::PARAM_INT); } else { $statement->bindValue($value['key'], trim((string)$value['value']), PDO::PARAM_STR); } }
-        	$this->script = $statement->execute();
-
-
+        	try {
+				$this->script = $statement->execute();
+			} catch (\Exception $e){
+				$this->script = $this->handleDBError($e, $statement);
+			}
         }
 
         /********************************************************************
@@ -525,9 +545,14 @@
 	        $where_str = $this->getWhere($params,$values,$original_params);
 
 	        $this->sql = 'SELECT '.implode(',',$columns).' FROM '.$this->table . $this->getJoin() . $filter_join .$where_str . $order_by . $limit;
-	        $statement = $this->dbh->prepare($this->sql);
-	        forEach($values as $value){ if( is_integer($value) ){ $statement->bindValue($value['key'], trim($value['value']), PDO::PARAM_INT); } else { $statement->bindValue($value['key'], trim((string)$value['value']), PDO::PARAM_STR); } }
-			$statement->execute();
+			$statement = (!empty($this->reader) && $this->shouldUseReader)?$this->reader->prepare($this->sql):$this->dbh->prepare($this->sql);
+			$this->shouldUserReader = true;
+			forEach($values as $value){ if( is_integer($value) ){ $statement->bindValue($value['key'], trim($value['value']), PDO::PARAM_INT); } else { $statement->bindValue($value['key'], trim((string)$value['value']), PDO::PARAM_STR); } }
+			try {
+				$statement->execute();
+			} catch (\Exception $e){
+				$this->handleDBError($e, $statement);
+			}
 			$statement->setFetchMode(PDO::FETCH_NUM);
 			$data = $statement->fetchAll(PDO::FETCH_OBJ);
 			
@@ -900,19 +925,23 @@
 
         ********************************************************************/
 
-        public function run( $sql, $bind=array() )
+        public function run( $sql, $bind=array(), $forceReader = false )
         {
-
             if (is_array($sql)) {
                 $sql = $sql["sql"];
             }
             try {
-                $statement = $this->dbh->prepare($sql);
-                $result = $statement->execute($bind);
+				$isSelect = false;
+				if (preg_match("/^select/i", $sql)) $isSelect = true;
+				$statement = ($forceReader && !empty($this->reader))?$this->reader->prepare($sql):$this->dbh->prepare($sql);
+				try {
+					$result = $statement->execute($bind);
+				} catch (\Exception $e){
+					$result = $this->handleDBError($e, $statement);
+				}
                 $this->data = [];
-                if (preg_match("/^select/i", $sql)) {
+                if ($isSelect) {
                     $statement->setFetchMode(PDO::FETCH_OBJ);
-
                     while ($row = $statement->fetch()) {
                         $this->data[] = $row;
                     }
@@ -928,7 +957,6 @@
                 $this->throwError($e);
                 $this->logError(oCoreProjectEnum::ODBO, $e);
             }
-
             return $this;
         }
 
@@ -1008,7 +1036,11 @@
 			$this->sql = 'SELECT COUNT(*) as count FROM '.$this->table.' '.$where_str;
 	        $statement = $this->dbh->prepare($this->sql);
 	        forEach($values as $value){ if( is_integer($value) ){ $statement->bindValue($value['key'], trim($value['value']), PDO::PARAM_INT); } else { $statement->bindValue($value['key'], trim((string)$value['value']), PDO::PARAM_STR); } }
-	        $statement->execute();
+	        try {
+				$statement->execute();
+			} catch (\Exception $e){
+				$this->handleDBError($e, $statement);
+			}
 	        while ($row = $statement->fetch()) { $this->data[] = $row; }
 	        $this->data = $this->data[0];
 	        unset($this->data[0]);
@@ -1029,7 +1061,11 @@
 			$where_str = $this->getWhere($params,$values);
 	        $statement = $this->dbh->prepare('SELECT * FROM '.$this->table.' '.$where_str.' ORDER BY RAND() LIMIT '.$rows);
 	        forEach($values as $value){ if( is_integer($value) ){ $statement->bindValue($value['key'], trim($value['value']), PDO::PARAM_INT); } else { $statement->bindValue($value['key'], trim((string)$value['value']), PDO::PARAM_STR); } }
-	        $statement->execute();
+	        try {
+				$statement->execute();
+			} catch (\Exception $e){
+				$this->handleDBError($e, $statement);
+			}
 	        $statement->setFetchMode(PDO::FETCH_NUM);
 	        $this->data = $statement->fetchAll(PDO::FETCH_OBJ);
 	        return $this;
@@ -1048,7 +1084,11 @@
         public function minimum( $params=array() ){  $this->math('MIN','minimum',$params); }
         public function truncate(){
 	        $statement = $this->dbh->prepare('TRUNCATE TABLE '.$this->table);
-	        $statement->execute();
+	        try {
+				$statement->execute();
+			} catch (\Exception $e){
+				$this->handleDBError($e, $statement);
+			}
 	   }
 
         private function math( $fn, $key, $params=array() ){
@@ -1059,7 +1099,11 @@
 				$where_str = $this->getWhere($params,$values);
 		        $statement = $this->dbh->prepare('SELECT '.$fn.'('.$column.') as '.$key.' FROM '.$this->table.' '.$where_str);
 		        forEach($values as $value){ if( is_integer($value) ){ $statement->bindValue($value['key'], trim($value['value']), PDO::PARAM_INT); } else { $statement->bindValue($value['key'], trim((string)$value['value']), PDO::PARAM_STR); } }
-		        $statement->execute();
+		        try {
+					$statement->execute();
+				} catch (\Exception $e){
+					$this->handleDBError($e, $statement);
+				}
 		        while ($row = $statement->fetch()) { $this->data[] = $row; }
 		        $this->data = $this->data[0];
 		        unset($this->data[0]);
@@ -1085,7 +1129,11 @@
 				$where_str = $this->getWhere($params,$values);
 		        $statement = $this->dbh->prepare('SELECT DISTINCT '.$column.' FROM '.$this->table.' '.$where_str);
 		        forEach($values as $value){ if( is_integer($value) ){ $statement->bindValue($value['key'], trim($value['value']), PDO::PARAM_INT); } else { $statement->bindValue($value['key'], trim((string)$value['value']), PDO::PARAM_STR); } }
-		        $statement->execute();
+		        try {
+					$statement->execute();
+				} catch (\Exception $e){
+					$this->handleDBError($e, $statement);
+				}
 		        while ($row = $statement->fetch()) { $this->data[] = $row[$column]; }
 		        return $this;
 	        } else {
@@ -1113,7 +1161,11 @@
 		    $statement->bindValue('olog_data',json_encode($object,JSON_PRETTY_PRINT),PDO::PARAM_STR);
 		    $statement->bindValue('OCDT',date('Y-m-d H:i:s'), PDO::PARAM_STR);
 		    $statement->bindValue('OCU',isSet($_SESSION['ouser']->ouser_id)?$_SESSION['ouser']->ouser_id:0, PDO::PARAM_INT);
-		    $statement->execute();
+		    try {
+				$statement->execute();
+			} catch (\Exception $e){
+				$this->handleDBError($e, $statement);
+			}
 
         }
 
@@ -1126,6 +1178,49 @@
         private function generateToken(){
 			$safe = FALSE;
 			return hash('sha512',base64_encode(openssl_random_pseudo_bytes(128,$safe)));
+		}
+
+		/**
+		 * Handle DB Error
+		 *
+		 * Handles erros from PDO, attempt to correct failed DB connections and retries, otherwise
+		 * raises new exception.
+		 */
+
+		public function handleDBError(\Exception $e, $statement, $count=1)
+		{
+			if($count >= 3) throw new \Exception($e->getErrorMessage() . ' (failed '.$count.' times)');
+			$errors = [
+				'server has gone away',
+				'no connection to the server',
+				'Lost connection',
+				'is dead or not enabled',
+				'Error while sending',
+				'decryption failed or bad record mac',
+				'server closed the connection unexpectedly',
+				'SSL connection has been closed unexpectedly',
+				'Error writing data to the connection',
+				'Resource deadlock avoided',
+				'Transaction() on null',
+				'child connection forced to terminate due to client_idle_limit',
+				'query_wait_timeout',
+				'reset by peer',
+				'Physical connection is not usable',
+				'TCP Provider: Error code 0x68',
+				'Name or service not known'
+			];
+
+			forEach($errors as $error){
+				if(strpos($e->getMessage(), $error) !== false){
+					$this->dbh = getDatabaseConnection(true);
+					$this->reader = getReaderDatabaseConnection(true);
+					try {
+						return $statement->execute();
+					} catch (\Exception $e) {
+						return $this->handleDBError($e, $statement, ++$count);
+					}
+				}
+			}
 		}
 
 }?>
