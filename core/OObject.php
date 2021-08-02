@@ -1,5 +1,6 @@
 <?php
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -15,6 +16,9 @@ class OObject
 	private $missing_path_handler;                                                                // if path is not found by router we can pass it to this handler for another attempt
 	private $missing_path_handler_path;                                                            // the path of the missing handler
 	private $access;
+	/**
+	 * @var \Psr\Container\ContainerInterface
+	 */
 	private static $container = null;
 
 	/**
@@ -383,20 +387,17 @@ class OObject
 		return false;
 	}
 
-	/***********************************************************************
-	 *
-	 * CREATE OBJECT
-	 ***********************************************************************/
-
-	private function getContainerSingleton()
+	/**
+	 * @return \Psr\Container\ContainerInterface
+	 */
+	private static function getContainerSingleton()
 	{
-		if (self::$container == null) {
-			$builder = new \DI\ContainerBuilder();
-			$builder->addDefinitions(__OBRAY_SITE_ROOT__ . 'di-config.php');
-			return self::$container = $builder->build();
+		return static::$container;
+	}
 
-		}
-		return self::$container;
+	public static function setContainerSingleton(ContainerInterface $container)
+	{
+		static::$container = $container;
 	}
 
 	private function createObject($path_array, $path, $base_path, &$params, $direct)
@@ -488,9 +489,9 @@ class OObject
 				if ($class_exists) {
 					try {
 						//	CREATE OBJECT
-						if ($isNamespacedPath) {
-							$container = $this->getContainerSingleton();
-							$obj = $container->make($obj_name, [
+						if ($isNamespacedPath && !is_null(static::getContainerSingleton())) {
+							$container = static::getContainerSingleton();
+							$obj = $container->get($obj_name, [
 								'params' => $params,
 								'direct' => $direct,
 								'rPath' => $rPath
