@@ -1,5 +1,8 @@
 <?php
 
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
+
 class OObject
 {
 	// private data members
@@ -14,79 +17,95 @@ class OObject
 	private $access;
 	private static $container = null;
 
+	/**
+	 * @var \Symfony\Component\Console\Output\OutputInterface
+	 */
+	protected $output;
+
 	// public data members
-	public $object = '';                                                                        // stores the name of the class
+	public $object = ''; // stores the name of the class
 
-	public function console()
+	public function console(...$args)
 	{
-		$args = func_get_args();
-		if (PHP_SAPI === 'cli' && !empty($args)) {
-
-			if (is_array($args[0]) || is_object($args[0])) {
-				print_r($args[0]);
-			} else if (count($args) === 3 && $args[1] !== NULL && $args[2] !== NULL) {
-				$colors = array(
-					// text color
-					"Black" => "\033[30m",
-					"Red" => "\033[31m",
-					"Green" => "\033[32m",
-					"Yellow" => "\033[33m",
-					"Blue" => "\033[34m",
-					"Purple" => "\033[35m",
-					"Cyan" => "\033[36m",
-					"White" => "\033[37m",
-					// text color bold
-					"BlackBold" => "\033[30m",
-					"RedBold" => "\033[1;31m",
-					"GreenBold" => "\033[1;32m",
-					"YellowBold" => "\033[1;33m",
-					"BlueBold" => "\033[1;34m",
-					"PurpleBold" => "\033[1;35m",
-					"CyanBold" => "\033[1;36m",
-					"WhiteBold" => "\033[1;37m",
-					// text color muted
-					"RedMuted" => "\033[2;31m",
-					"GreenMuted" => "\033[2;32m",
-					"YellowMuted" => "\033[2;33m",
-					"BlueMuted" => "\033[2;34m",
-					"PurpleMuted" => "\033[2;35m",
-					"CyanMuted" => "\033[2;36m",
-					"WhiteMuted" => "\033[2;37m",
-					// text color muted
-					"BlackUnderline" => "\033[4;30m",
-					"RedUnderline" => "\033[4;31m",
-					"GreenUnderline" => "\033[4;32m",
-					"YellowUnderline" => "\033[4;33m",
-					"BlueUnderline" => "\033[4;34m",
-					"PurpleUnderline" => "\033[4;35m",
-					"CyanUnderline" => "\033[4;36m",
-					"WhiteUnderline" => "\033[4;37m",
-					// text color blink
-					"BlackBlink" => "\033[5;30m",
-					"RedBlink" => "\033[5;31m",
-					"GreenBlink" => "\033[5;32m",
-					"YellowBlink" => "\033[5;33m",
-					"BlueBlink" => "\033[5;34m",
-					"PurpleBlink" => "\033[5;35m",
-					"CyanBlink" => "\033[5;36m",
-					"WhiteBlink" => "\033[5;37m",
-					// text color background
-					"RedBackground" => "\033[7;31m",
-					"GreenBackground" => "\033[7;32m",
-					"YellowBackground" => "\033[7;33m",
-					"BlueBackground" => "\033[7;34m",
-					"PurpleBackground" => "\033[7;35m",
-					"CyanBackground" => "\033[7;36m",
-					"WhiteBackground" => "\033[7;37m",
-					// reset - auto called after each of the above by default
-					"Reset" => "\033[0m"
-				);
-				$color = $colors[$args[2]];
-				printf($color . array_shift($args) . "\033[0m", array_shift($args));
-			} else {
-				printf(array_shift($args), array_shift($args));
-			}
+		if (is_null($this->output)) {
+			$this->output = new ConsoleOutput();
 		}
+
+		if (PHP_SAPI !== 'cli' || empty($args)) {
+			// We only log to console when we are in console and there is actually something to log
+			return;
+		}
+
+		if (is_array($args[0]) || is_object($args[0])) {
+			$this->output->write(print_r($args[0], true));
+		} elseif (count($args) === 3 && $args[1] !== NULL && $args[2] !== NULL) {
+			$colors = array(
+				// text color
+				"Black" => "\033[30m",
+				"Red" => "\033[31m",
+				"Green" => "\033[32m",
+				"Yellow" => "\033[33m",
+				"Blue" => "\033[34m",
+				"Purple" => "\033[35m",
+				"Cyan" => "\033[36m",
+				"White" => "\033[37m",
+				// text color bold
+				"BlackBold" => "\033[30m",
+				"RedBold" => "\033[1;31m",
+				"GreenBold" => "\033[1;32m",
+				"YellowBold" => "\033[1;33m",
+				"BlueBold" => "\033[1;34m",
+				"PurpleBold" => "\033[1;35m",
+				"CyanBold" => "\033[1;36m",
+				"WhiteBold" => "\033[1;37m",
+				// text color muted
+				"RedMuted" => "\033[2;31m",
+				"GreenMuted" => "\033[2;32m",
+				"YellowMuted" => "\033[2;33m",
+				"BlueMuted" => "\033[2;34m",
+				"PurpleMuted" => "\033[2;35m",
+				"CyanMuted" => "\033[2;36m",
+				"WhiteMuted" => "\033[2;37m",
+				// text color muted
+				"BlackUnderline" => "\033[4;30m",
+				"RedUnderline" => "\033[4;31m",
+				"GreenUnderline" => "\033[4;32m",
+				"YellowUnderline" => "\033[4;33m",
+				"BlueUnderline" => "\033[4;34m",
+				"PurpleUnderline" => "\033[4;35m",
+				"CyanUnderline" => "\033[4;36m",
+				"WhiteUnderline" => "\033[4;37m",
+				// text color blink
+				"BlackBlink" => "\033[5;30m",
+				"RedBlink" => "\033[5;31m",
+				"GreenBlink" => "\033[5;32m",
+				"YellowBlink" => "\033[5;33m",
+				"BlueBlink" => "\033[5;34m",
+				"PurpleBlink" => "\033[5;35m",
+				"CyanBlink" => "\033[5;36m",
+				"WhiteBlink" => "\033[5;37m",
+				// text color background
+				"RedBackground" => "\033[7;31m",
+				"GreenBackground" => "\033[7;32m",
+				"YellowBackground" => "\033[7;33m",
+				"BlueBackground" => "\033[7;34m",
+				"PurpleBackground" => "\033[7;35m",
+				"CyanBackground" => "\033[7;36m",
+				"WhiteBackground" => "\033[7;37m",
+				// reset - auto called after each of the above by default
+				"Reset" => "\033[0m"
+			);
+			$color = $colors[$args[2]];
+			$this->output->write(sprintf($color . array_shift($args) . "\033[0m", array_shift($args)));
+		} elseif (count($args) === 2) {
+			$this->output->write(sprintf(array_shift($args), array_shift($args)));
+		}
+	}
+
+	public function setOutput(OutputInterface $output)
+	{
+		$this->output = $output;
+		return $this;
 	}
 
 	/***********************************************************************
@@ -102,23 +121,22 @@ class OObject
 		$this->params = $params;
 		$components = parse_url($path);
 		$this->components = $components;
-		if (isset($components['query'])) {
+		if (array_key_exists('query', $components)) {
 			if (is_string($params)) {
 				$params = array("body" => $params);
 			}
 			parse_str($components['query'], $tmp);
 			$params = array_merge($tmp, $params);
-			if (!empty($components["scheme"]) && ($components["scheme"] == "http" || $components["scheme"] == "https")) {
-				$path = $components["scheme"] . "://" . $components["host"] . (!empty($components["port"]) ? ':' . $components["port"] : '') . $components["path"];
-			}
+		}
+		if (array_key_exists('scheme', $components) && in_array($components['scheme'], ['http', 'https'])) {
+			$port = $components['port'] ?? null;
+			$path = $components["scheme"] . "://" . $components["host"] . (!empty($port) ? ':' . $port : '') . $components["path"];
 		}
 
 		/*********************************
 		 * handle remote HTTP(S) calls
 		 *********************************/
 		if (isset($components['host']) && $direct) {
-
-
 			$timeout = 5;
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
@@ -143,13 +161,14 @@ class OObject
 				$headers[] = 'Accept: ' . $params['http_accept'];
 				unset($params['http_accept']);
 			}
-			if (!empty($params['http_username']) && !empty($params['http_password'])) {
-				curl_setopt($ch, CURLOPT_USERPWD, $params['http_username'] . ":" . $params['http_password']);
-				unset($params['http_username']);
-				unset($params['http_password']);
-			}
-			if (!empty($params['http_username']) && empty($params['http_password'])) {
-				curl_setopt($ch, CURLOPT_USERPWD, $params['http_username'] . ":");
+			if (!empty($params['http_username'])) {
+				if (!empty($params['http_password'])) {
+					curl_setopt($ch, CURLOPT_USERPWD, $params['http_username'] . ":" . $params['http_password']);
+					unset($params['http_password']);
+				} else {
+					curl_setopt($ch, CURLOPT_USERPWD, $params['http_username'] . ":");
+				}
+
 				unset($params['http_username']);
 			}
 			if (!empty($params['http_raw'])) {
@@ -357,7 +376,7 @@ class OObject
 	{
 		$namespace_components = explode("/", $this->path);
 		$namespace_components = array_filter($namespace_components, function ($item) {
-			return $item !== "app";
+			return !empty($item) && $item !== $this->getAppFolderName();
 		});
 		array_pop($namespace_components);
 		$namespace_str = implode("/", $namespace_components);
@@ -389,11 +408,10 @@ class OObject
 
 	private function createObject($path_array, $path, $base_path, &$params, $direct)
 	{
-		$path = '';
 		$isNamespacedPath = false;
 		$deprecatedControllersPath = "controllers/";
-		$namespacedControllersPath = "app/controllers/";
-		$namespacedModelsPath = "app/models/";
+		$namespacedControllersPath = $this->getAppFolderName() . "/controllers/";
+		$namespacedModelsPath = $this->getAppFolderName() . "/models/";
 		$deprecatedControllersDirectoryExists = false;
 		$rPath = array();
 		$obj_name_loop_counter = 0;
@@ -996,5 +1014,11 @@ class OObject
 	{
 		$logger = new oLog();
 		$logger->logDebug($oProjectEnum, $message);
+	}
+
+	public function getAppFolderName()
+	{
+		$namespaceRoot = explode('/', realpath(__OBRAY_NAMESPACE_ROOT__));
+		return array_pop($namespaceRoot);
 	}
 }

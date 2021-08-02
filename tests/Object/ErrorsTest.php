@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\Object;
+namespace tests\Object;
 
-use Tests\TestCase;
+use tests\TestCase;
 
 class ErrorsTest extends TestCase
 {
