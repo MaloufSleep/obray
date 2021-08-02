@@ -227,22 +227,17 @@ class OObject
 				$this->console($params);
 			}
 
-			if (!empty($headers)) {
-				if ($debug) {
-					$this->console("*****HEADERS*****");
-					$this->console($headers);
-				}
+			if ($debug) {
+				$this->console("*****HEADERS*****");
 				$this->console($headers);
-				curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-			} else {
-				if ($debug) {
-					$this->console("NO HEADERS SET!\n");
-				}
 			}
+
+			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($ch, CURLOPT_URL, $path);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
 			curl_setopt($ch, CURLOPT_TIMEOUT, 400); //timeout in seconds
+
 			$this->data = curl_exec($ch);
 			if ($debug) {
 				$this->console($this->data);
@@ -256,17 +251,15 @@ class OObject
 			$data = json_decode($this->data);
 
 			$info["http_code"] = intval($info["http_code"]);
-			if (!($info["http_code"] >= 200 && $info["http_code"] < 300)) {
+			if ($info["http_code"] < 200 || $info["http_code"] >= 300) {
 				//echo "HTTP CODE IS NOT 200";
 				if (!empty($data->Message)) {
 					$this->throwError($data->Message, $info["http_code"]);
-				} else if (!empty($data->error)) {
+				} elseif (!empty($data->error)) {
 					$this->throwError($data->error);
-				} else if (!empty($data->errors)) {
+				} elseif (!empty($data->errors)) {
 					$this->throwError("");
 					$this->errors = $data->errors;
-				} else if (!empty($this->data)) {
-					//$this->data = $this->data;
 				} else {
 					$this->throwError("An error has occurred with no message.", $info["http_code"]);
 				}
