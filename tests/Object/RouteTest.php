@@ -26,6 +26,22 @@ class RouteTest extends TestCase
 	/**
 	 * @covers OObject::route
 	 */
+	public function testSuccessfulRouteNotDirect()
+	{
+		$response = $this->router->route('tests/TestController/test', [], false);
+
+		$this->assertNotError();
+		$this->assertInstanceOf(OObject::class, $response);
+		$this->assertNotSame($this->router, $response);
+		$this->assertNotNull($response->data);
+		$this->assertSame([
+			'Success message',
+		], $response->data);
+	}
+
+	/**
+	 * @covers OObject::route
+	 */
 	public function testRouteWithQuery()
 	{
 		// Array body
@@ -181,5 +197,20 @@ class RouteTest extends TestCase
 		$this->assertSame($this->router, $response);
 		$this->assertNotNull($response->data);
 		$this->assertIsObject($response->data);
+	}
+
+	/**
+	 * @covers OObject::route
+	 */
+	public function testRemoteCallNotSuccess()
+	{
+		$response = $this->router->route('https://jsonplaceholder.typicode.com/todos/-1');
+
+		$this->assertError();
+		$this->assertInstanceOf(OObject::class, $response);
+		$this->assertSame($this->router, $response);
+		$this->assertNotNull($response->data);
+		$this->assertIsString($response->data);
+		$this->assertSame('{}', $response->data);
 	}
 }

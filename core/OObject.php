@@ -632,10 +632,9 @@ class OObject
 				}
 
 				// restrict access to users without correct permissions (non-graduated)
-			} else if (
-				is_int($perms[$object_name]) &&
-				isset($_SESSION[$user_session_key]) &&
-				(
+			} else if (is_int($perms[$object_name])
+				&& isset($_SESSION[$user_session_key])
+				&& (
 					isset($_SESSION[$user_session_key]->ouser_permission_level)
 					&& !defined("__OBRAY_GRADUATED_PERMISSIONS__")
 					&& $_SESSION[$user_session_key]->ouser_permission_level != $perms[$object_name]
@@ -645,9 +644,9 @@ class OObject
 				$this->throwError('You cannot access this resource.', 403, 'Forbidden');
 
 				// restrict access to users without correct permissions (graduated)
-			} else if (
-				is_int($perms[$object_name]) &&
-				isset($_SESSION[$user_session_key]) &&
+			} else if (is_int($perms[$object_name])
+				&& isset($_SESSION[$user_session_key])
+				&&
 				(
 					isset($_SESSION[$user_session_key]->ouser_permission_level)
 					&& defined("__OBRAY_GRADUATED_PERMISSIONS__")

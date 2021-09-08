@@ -5,6 +5,9 @@ namespace tests\Object;
 use Symfony\Component\Console\Output\TrimmedBufferOutput;
 use tests\TestCase;
 
+/**
+ * @covers OObject::console
+ */
 class ConsoleTest extends TestCase
 {
 	/**

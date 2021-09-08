@@ -19,4 +19,12 @@ class cTestController extends OObject
 			'params' => $params,
 		];
 	}
+
+	public function getPermissions()
+	{
+		return [
+			'object' => 1,
+			'test' => 1,
+		];
+	}
 }

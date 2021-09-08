@@ -16,6 +16,10 @@ class TestCase extends \PHPUnit\Framework\TestCase
 	{
 		parent::setUp();
 
+		$_SESSION['ouser'] = new class {
+			public $ouser_permission_level = 1;
+		};
+
 		$this->router = new OObject();
 		$this->router->setOutput(new NullOutput());
 
@@ -33,5 +37,12 @@ class TestCase extends \PHPUnit\Framework\TestCase
 		$errors = json_encode($this->router->errors ?? []);
 
 		$this->assertFalse($this->router->isError(), $errors);
+	}
+
+	protected function assertError()
+	{
+		$errors = json_encode($this->router->errors ?? []);
+
+		$this->assertTrue($this->router->isError(), $errors);
 	}
 }
