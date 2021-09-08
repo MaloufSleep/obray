@@ -6,7 +6,7 @@ use Exception;
 use tests\TestCase;
 
 /**
- * @covers OObject::getStackTrace
+ * @covers OObject
  */
 class GetStackTraceTest extends TestCase
 {

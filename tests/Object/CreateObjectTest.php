@@ -8,7 +8,7 @@ use tests\controllers\Nested\cNestedController;
 use tests\TestCase;
 
 /**
- * @covers OObject::createObject
+ * @covers OObject
  */
 class CreateObjectTest extends TestCase
 {

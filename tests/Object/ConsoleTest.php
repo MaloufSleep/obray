@@ -6,7 +6,7 @@ use Symfony\Component\Console\Output\TrimmedBufferOutput;
 use tests\TestCase;
 
 /**
- * @covers OObject::console
+ * @covers OObject
  */
 class ConsoleTest extends TestCase
 {

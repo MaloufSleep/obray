@@ -5,11 +5,11 @@ namespace tests\Object;
 use OObject;
 use tests\TestCase;
 
+/**
+ * @covers OObject
+ */
 class RouteTest extends TestCase
 {
-	/**
-	 * @covers OObject::route
-	 */
 	public function testSuccessfulRoute()
 	{
 		$response = $this->router->route('tests/TestController/test');
@@ -23,9 +23,6 @@ class RouteTest extends TestCase
 		], $response->data);
 	}
 
-	/**
-	 * @covers OObject::route
-	 */
 	public function testSuccessfulRouteNotDirect()
 	{
 		$response = $this->router->route('tests/TestController/test', [], false);
@@ -39,9 +36,6 @@ class RouteTest extends TestCase
 		], $response->data);
 	}
 
-	/**
-	 * @covers OObject::route
-	 */
 	public function testRouteWithQuery()
 	{
 		// Array body
@@ -72,9 +66,6 @@ class RouteTest extends TestCase
 		], $response->data);
 	}
 
-	/**
-	 * @covers OObject::route
-	 */
 	public function testRemoteCallPost()
 	{
 		$response = $this->router->route('https://jsonplaceholder.typicode.com/todos', [
@@ -98,9 +89,6 @@ class RouteTest extends TestCase
 		$this->assertIsObject($response->data);
 	}
 
-	/**
-	 * @covers OObject::route
-	 */
 	public function testRemoteCallPatch()
 	{
 		$response = $this->router->route('https://jsonplaceholder.typicode.com/todos/1', [
@@ -124,9 +112,6 @@ class RouteTest extends TestCase
 		$this->assertIsObject($response->data);
 	}
 
-	/**
-	 * @covers OObject::route
-	 */
 	public function testRemoteCallPut()
 	{
 		$response = $this->router->route('https://jsonplaceholder.typicode.com/todos/1?key=value', [
@@ -149,9 +134,6 @@ class RouteTest extends TestCase
 		$this->assertIsObject($response->data);
 	}
 
-	/**
-	 * @covers OObject::route
-	 */
 	public function testRemoteCallBodyOnly()
 	{
 		$response = $this->router->route('https://jsonplaceholder.typicode.com/todos', [
@@ -167,9 +149,6 @@ class RouteTest extends TestCase
 		$this->assertIsObject($response->data);
 	}
 
-	/**
-	 * @covers OObject::route
-	 */
 	public function testRemoteCallJsonBody()
 	{
 		$response = $this->router->route('https://jsonplaceholder.typicode.com/todos', [
@@ -185,9 +164,6 @@ class RouteTest extends TestCase
 		$this->assertIsObject($response->data);
 	}
 
-	/**
-	 * @covers OObject::route
-	 */
 	public function testRemoteCallNoHeaders()
 	{
 		$response = $this->router->route('https://jsonplaceholder.typicode.com/todos/1');
@@ -199,9 +175,6 @@ class RouteTest extends TestCase
 		$this->assertIsObject($response->data);
 	}
 
-	/**
-	 * @covers OObject::route
-	 */
 	public function testRemoteCallNotSuccess()
 	{
 		$response = $this->router->route('https://jsonplaceholder.typicode.com/todos/-1');

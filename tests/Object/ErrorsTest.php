@@ -7,8 +7,7 @@ use tests\TestCase;
 class ErrorsTest extends TestCase
 {
 	/**
-	 * @covers OObject::throwError
-	 * @covers OObject::isError
+	 * @covers OObject
 	 */
 	public function testErrorCanBeThrown()
 	{
