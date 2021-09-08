@@ -106,7 +106,7 @@ class OObject
 		}
 	}
 
-	public function setOutput(OutputInterface $output)
+	public function setOutput(?OutputInterface $output)
 	{
 		$this->output = $output;
 		return $this;
