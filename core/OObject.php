@@ -403,9 +403,10 @@ class OObject
 	private function createObject($path_array, $path, $base_path, &$params, $direct)
 	{
 		$isNamespacedPath = false;
-		$deprecatedControllersPath = "controllers/";
-		$namespacedControllersPath = $this->getAppFolderName() . "/controllers/";
-		$namespacedModelsPath = $this->getAppFolderName() . "/models/";
+		$namespacedControllersPath = $base_path . "/controllers/";
+		$namespacedModelsPath = $base_path . "/models/";
+		$deprecatedControllersPath = dirname($namespacedControllersPath, 2) . "/controllers/";
+		$deprecatedModelsPath = dirname($namespacedModelsPath, 2) . "/models/";
 		$deprecatedControllersDirectoryExists = false;
 		$rPath = array();
 		$obj_name_loop_counter = 0;
@@ -420,11 +421,11 @@ class OObject
 		while (count($path_array) > 0) {
 
 			if (empty($base_path)) {
-				if (is_dir(__OBRAY_SITE_ROOT__ . $deprecatedControllersPath . implode('/', $path_array))) {
+				if (is_dir($deprecatedControllersPath . implode('/', $path_array))) {
 					$deprecatedControllersDirectoryExists = true;
 					$path_array[] = $path_array[(count($path_array) - 1)];
 				}
-				if (is_dir(__OBRAY_SITE_ROOT__ . $namespacedControllersPath . implode('/', $path_array))) {
+				if (is_dir($namespacedControllersPath . implode('/', $path_array))) {
 					if (!$deprecatedControllersDirectoryExists) {
 						$path_array[] = $path_array[(count($path_array) - 1)];
 					}
@@ -434,11 +435,11 @@ class OObject
 
 			$obj_name = array_pop($path_array);
 
-			$this->namespaced_controller_path = __OBRAY_SITE_ROOT__ . $namespacedControllersPath . implode('/', $path_array) . '/c' . str_replace(' ', '', ucWords(str_replace('-', ' ', $obj_name))) . '.php';
-			$this->deprecated_controller_path = __OBRAY_SITE_ROOT__ . $deprecatedControllersPath . implode('/', $path_array) . '/c' . str_replace(' ', '', ucWords(str_replace('-', ' ', $obj_name))) . '.php';
+			$this->namespaced_controller_path = $namespacedControllersPath . implode('/', $path_array) . '/c' . str_replace(' ', '', ucWords(str_replace('-', ' ', $obj_name))) . '.php';
+			$this->deprecated_controller_path = $deprecatedControllersPath . implode('/', $path_array) . '/c' . str_replace(' ', '', ucWords(str_replace('-', ' ', $obj_name))) . '.php';
 
-			$this->namespaced_model_path = __OBRAY_SITE_ROOT__ . $namespacedModelsPath . implode('/', $path_array) . '/' . $obj_name . '.php';
-			$this->deprecated_model_path = $base_path . implode('/', $path_array) . '/' . $obj_name . '.php';
+			$this->namespaced_model_path = $namespacedModelsPath . implode('/', $path_array) . '/' . $obj_name . '.php';
+			$this->deprecated_model_path = $deprecatedModelsPath . implode('/', $path_array) . '/' . $obj_name . '.php';
 
 			if (file_exists($this->namespaced_model_path)) {
 				$objectType = "model";
@@ -499,6 +500,7 @@ class OObject
 						} else {
 							$obj = new $obj_name($params, $direct, $rPath);
 						}
+						/** @var OObject $obj */
 						$obj->objectType = $objectType;
 						$obj->setObject(get_class($obj));
 						$obj->setContentType($obj->content_type);
@@ -513,6 +515,10 @@ class OObject
 						if (method_exists($obj, 'setDatabaseConnection')) {
 							$obj->setDatabaseConnection(getDatabaseConnection());
 							$obj->setReaderDatabaseConnection(getReaderDatabaseConnection());
+						}
+
+						if (substr($path, 0, strlen($this->components['path'])) === $this->components['path']) {
+							$path = substr($path, strlen($this->components['path']));
 						}
 
 						//	ROUTE REMAINING PATH - function calls

@@ -4,7 +4,7 @@ namespace tests\controllers;
 
 use OObject;
 
-class TestController extends OObject
+class cTestController extends OObject
 {
 	public function test()
 	{
