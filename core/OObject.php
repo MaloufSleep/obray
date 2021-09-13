@@ -402,32 +402,15 @@ class OObject
 		$namespacedModelsPath = $base_path . "/models/";
 		$deprecatedControllersPath = dirname($namespacedControllersPath, 2) . "/controllers/";
 		$deprecatedModelsPath = dirname($namespacedModelsPath, 2) . "/models/";
-		$deprecatedControllersDirectoryExists = false;
 		$rPath = array();
 		$obj_name_loop_counter = 0;
 		$obj_name_loop_name_check = "";
 
 		if (empty($path_array) && empty($this->object) && empty($base_path)) {
-			if (empty($path_array)) {
-				$path_array[] = "index";
-			}
+			$path_array[] = "index";
 		}
 
 		while (count($path_array) > 0) {
-
-			if (empty($base_path)) {
-				if (is_dir($deprecatedControllersPath . implode('/', $path_array))) {
-					$deprecatedControllersDirectoryExists = true;
-					$path_array[] = $path_array[(count($path_array) - 1)];
-				}
-				if (is_dir($namespacedControllersPath . implode('/', $path_array))) {
-					if (!$deprecatedControllersDirectoryExists) {
-						$path_array[] = $path_array[(count($path_array) - 1)];
-					}
-				}
-			}
-
-
 			$obj_name = array_pop($path_array);
 
 			$this->namespaced_controller_path = $namespacedControllersPath . implode('/', $path_array) . '/c' . str_replace(' ', '', ucWords(str_replace('-', ' ', $obj_name))) . '.php';
@@ -447,10 +430,6 @@ class OObject
 				$objectType = "controller";
 				$obj_name = "c" . str_replace(' ', '', ucWords(str_replace('-', ' ', $obj_name)));
 				$this->path = $this->namespaced_controller_path;
-
-				if (empty($path)) {
-					$path = "/index/";
-				}
 				$isNamespacedPath = true;
 			} else if (file_exists($this->deprecated_controller_path)) {
 				$objectType = "controller";
@@ -463,9 +442,6 @@ class OObject
 					} else {
 						require_once __OBRAY_SITE_ROOT__ . "controllers/cRoot.php";
 					}
-				}
-				if (empty($path)) {
-					$path = "/index/";
 				}
 			}
 

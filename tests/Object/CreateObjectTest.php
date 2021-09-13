@@ -99,4 +99,17 @@ class CreateObjectTest extends TestCase
 			]
 		]), json_encode($object->errors));
 	}
+
+	public function testEmptyPath()
+	{
+		$object = $this->router->route('m/m/m/m/m/m/m/m/m/m/m/m/');
+
+		$this->assertError();
+		$this->assertSame($this->router, $object);
+		$this->assertJsonStringEqualsJsonString(json_encode([
+			'notfound' => [
+				'Route not found object: /m',
+			]
+		]), json_encode($this->router->errors));
+	}
 }
