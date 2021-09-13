@@ -22,6 +22,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
 		$this->router = new OObject();
 		$this->router->setOutput(new NullOutput());
+		$this->router::setContainerSingleton(null);
 
 		define('__OBRAY_ROUTES__', serialize([
 			'obray' => realpath(__DIR__ . '/../core') . '/',
@@ -30,10 +31,13 @@ class TestCase extends \PHPUnit\Framework\TestCase
 		define('__OBRAY_SITE_ROOT__', realpath(__DIR__ . '/../app') . '/');
 		define('__OBRAY_NAMESPACE_ROOT__', realpath(__DIR__ . '/../app/app') . '/');
 		define('__OBRAY_APP_NAME__', 'App');
+		define('__APP__', 'App');
 		define('__OBRAY_DATABASE_HOST__', 'mysql');
 		define('__OBRAY_DATABASE_NAME__', 'obray');
 		define('__OBRAY_DATABASE_USERNAME__', 'obray');
 		define('__OBRAY_DATABASE_PASSWORD__', 'obray');
+
+		define('__LOGS__', realpath(__DIR__ . '/../logs') . '/');
 	}
 
 	protected function assertNotError()

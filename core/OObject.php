@@ -390,7 +390,7 @@ class OObject
 		return static::$container;
 	}
 
-	public static function setContainerSingleton(ContainerInterface $container)
+	public static function setContainerSingleton(?ContainerInterface $container)
 	{
 		static::$container = $container;
 	}
@@ -528,7 +528,6 @@ class OObject
 						$this->throwError($e->getMessage(), 500, $code);
 						$this->logError(oCoreProjectEnum::OOBJECT, $e);
 					}
-
 				}
 				break;
 			} else {
