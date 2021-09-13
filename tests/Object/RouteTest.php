@@ -2,6 +2,9 @@
 
 namespace tests\Object;
 
+use App\models\oTestModel;
+use cLegacyController;
+use oLegacyModel;
 use OObject;
 use tests\TestCase;
 
@@ -12,7 +15,7 @@ class RouteTest extends TestCase
 {
 	public function testSuccessfulRoute()
 	{
-		$response = $this->router->route('tests/TestController/test');
+		$response = $this->router->route('app/TestController/test');
 
 		$this->assertNotError();
 		$this->assertInstanceOf(OObject::class, $response);
@@ -25,7 +28,7 @@ class RouteTest extends TestCase
 
 	public function testSuccessfulRouteNotDirect()
 	{
-		$response = $this->router->route('tests/TestController/test', [], false);
+		$response = $this->router->route('app/TestController/test', [], false);
 
 		$this->assertNotError();
 		$this->assertInstanceOf(OObject::class, $response);
@@ -39,7 +42,7 @@ class RouteTest extends TestCase
 	public function testRouteWithQuery()
 	{
 		// Array body
-		$response = $this->router->route('tests/TestController/withQuery?key=value');
+		$response = $this->router->route('app/TestController/withQuery?key=value');
 
 		$this->assertNotError();
 		$this->assertInstanceOf(OObject::class, $response);
@@ -52,7 +55,7 @@ class RouteTest extends TestCase
 		], $response->data);
 
 		// String body
-		$response = $this->router->route('tests/TestController/withQuery?key=value', 'body');
+		$response = $this->router->route('app/TestController/withQuery?key=value', 'body');
 
 		$this->assertNotError();
 		$this->assertInstanceOf(OObject::class, $response);
@@ -185,5 +188,32 @@ class RouteTest extends TestCase
 		$this->assertNotNull($response->data);
 		$this->assertIsString($response->data);
 		$this->assertSame('{}', $response->data);
+	}
+
+	public function testNamespacedModelCreateObject()
+	{
+		$object = $this->router->route('app/oTestModel');
+
+		$this->assertNotError();
+		$this->assertNotSame($this->router, $object);
+		$this->assertInstanceOf(oTestModel::class, $object);
+	}
+
+	public function testLegacyModelCreateObject()
+	{
+		$object = $this->router->route('app/oLegacyModel');
+
+		$this->assertNotError();
+		$this->assertNotSame($this->router, $object);
+		$this->assertInstanceOf(oLegacyModel::class, $object);
+	}
+
+	public function testLegacyControllerCreateObject()
+	{
+		$object = $this->router->route('app/LegacyController');
+
+		$this->assertNotError();
+		$this->assertNotSame($this->router, $object);
+		$this->assertInstanceOf(cLegacyController::class, $object);
 	}
 }

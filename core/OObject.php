@@ -371,20 +371,15 @@ class OObject
 
 	private function _namespacedClassExists($path, $obj_name)
 	{
-		$namespace_components = explode("/", $this->path);
+		$namespace_components = explode('/', $this->path);
 		$namespace_components = array_filter($namespace_components, function ($item) {
-			return !empty($item) && $item !== $this->getAppFolderName();
+			return !empty($item);
 		});
 		array_pop($namespace_components);
-		$namespace_str = implode("/", $namespace_components);
-		$namespace = str_replace("/", "\\", str_replace(__OBRAY_NAMESPACE_ROOT__, __OBRAY_APP_NAME__ . '\\', $namespace_str));
-		$namespaced_path = "\\" . $namespace . "\\" . $obj_name;
-		$exists = class_exists($namespaced_path);
-		if ($exists) {
-			$this->namespaced_path = $namespaced_path;
-			return true;
-		}
-		return false;
+		$namespace_str = '/' . implode('/', $namespace_components);
+		$namespace = str_replace('/', '\\', str_replace(__OBRAY_NAMESPACE_ROOT__, '\\' . __OBRAY_APP_NAME__ . '\\', $namespace_str));
+		$this->namespaced_path = $namespace . '\\' . $obj_name;
+		return class_exists($this->namespaced_path);
 	}
 
 	/**

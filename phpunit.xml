@@ -8,6 +8,9 @@
     <testsuites>
         <testsuite name="Test">
             <directory suffix="Test.php">./tests</directory>
+            <exclude>./tests/app</exclude>
+            <exclude>./tests/controllers</exclude>
+            <exclude>./tests/models</exclude>
         </testsuite>
     </testsuites>
     <coverage processUncoveredFiles="true">

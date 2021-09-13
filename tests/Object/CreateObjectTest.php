@@ -3,8 +3,8 @@
 namespace tests\Object;
 
 use OObject;
-use tests\controllers\cTestController;
-use tests\controllers\Nested\cNestedController;
+use App\controllers\cTestController;
+use App\controllers\Nested\cNestedController;
 use tests\TestCase;
 
 /**
@@ -14,7 +14,7 @@ class CreateObjectTest extends TestCase
 {
 	public function test404()
 	{
-		$response = $this->router->route('tests/DoesNotExist');
+		$response = $this->router->route('app/DoesNotExist');
 
 		$this->assertInstanceOf(OObject::class, $response);
 		$this->assertSame($this->router, $response);
@@ -30,7 +30,7 @@ class CreateObjectTest extends TestCase
 
 	public function testCreateAnObject()
 	{
-		$response = $this->router->route('tests/TestController');
+		$response = $this->router->route('app/TestController');
 
 		$this->assertNotError();
 		$this->assertInstanceOf(cTestController::class, $response);
@@ -56,7 +56,7 @@ class CreateObjectTest extends TestCase
 
 	public function testIndexOfController()
 	{
-		$response = $this->router->route('tests/Nested/NestedController');
+		$response = $this->router->route('app/Nested/NestedController');
 
 		$this->assertInstanceOf(cNestedController::class, $response);
 		$this->assertObjectNotHasAttribute('data', $response);

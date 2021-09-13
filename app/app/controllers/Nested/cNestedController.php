@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\controllers\Nested;
+namespace App\controllers\Nested;
 
 use OObject;
 

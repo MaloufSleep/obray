@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\controllers;
+namespace App\controllers;
 
 use OObject;
 

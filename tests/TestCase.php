@@ -25,11 +25,15 @@ class TestCase extends \PHPUnit\Framework\TestCase
 
 		define('__OBRAY_ROUTES__', serialize([
 			'obray' => realpath(__DIR__ . '/../core') . '/',
-			'tests' => __DIR__,
+			'app' => realpath(__DIR__ . '/../app/app'),
 		]));
-		define('__OBRAY_SITE_ROOT__', realpath(__DIR__ . '/../') . '/');
-		define('__OBRAY_NAMESPACE_ROOT__', realpath(__DIR__ . '/..') . '/');
-		define('__OBRAY_APP_NAME__', 'Tests');
+		define('__OBRAY_SITE_ROOT__', realpath(__DIR__ . '/../app') . '/');
+		define('__OBRAY_NAMESPACE_ROOT__', realpath(__DIR__ . '/../app/app') . '/');
+		define('__OBRAY_APP_NAME__', 'App');
+		define('__OBRAY_DATABASE_HOST__', 'mysql');
+		define('__OBRAY_DATABASE_NAME__', 'obray');
+		define('__OBRAY_DATABASE_USERNAME__', 'obray');
+		define('__OBRAY_DATABASE_PASSWORD__', 'obray');
 	}
 
 	protected function assertNotError()
