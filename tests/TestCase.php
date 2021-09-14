@@ -40,17 +40,21 @@ class TestCase extends \PHPUnit\Framework\TestCase
 		define('__LOGS__', realpath(__DIR__ . '/../logs') . '/');
 	}
 
-	protected function assertNotError()
+	protected function assertNotError(?OObject $object = null)
 	{
-		$errors = json_encode($this->router->errors ?? []);
+		$object = $object ?? $this->router;
 
-		$this->assertFalse($this->router->isError(), $errors);
+		$errors = json_encode($object->errors ?? []);
+
+		$this->assertFalse($object->isError(), $errors);
 	}
 
-	protected function assertError()
+	protected function assertError(?OObject $object = null)
 	{
-		$errors = json_encode($this->router->errors ?? []);
+		$object = $object ?? $this->router;
 
-		$this->assertTrue($this->router->isError(), $errors);
+		$errors = json_encode($object->errors ?? []);
+
+		$this->assertTrue($object->isError(), $errors);
 	}
 }
