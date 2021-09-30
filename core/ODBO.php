@@ -5,10 +5,103 @@
  ********************************************************************************************************************/
 class ODBO extends OObject
 {
+	/**
+	 * @var \PDO
+	 */
 	public $dbh;
 	public $enable_system_columns = TRUE;
 
 	private $shouldUseReader = true;
+	/**
+	 * @var array
+	 */
+	public $data_types;
+	/**
+	 * @var bool
+	 */
+	public $enable_column_additions;
+	/**
+	 * @var bool
+	 */
+	public $enable_column_removal;
+	/**
+	 * @var bool
+	 */
+	public $enable_data_type_changes;
+	/**
+	 * @var string
+	 */
+	public $table;
+	/**
+	 * @var array
+	 */
+	public $table_definition;
+	/**
+	 * @var string
+	 */
+	public $primary_key_column;
+	/**
+	 * @var bool
+	 */
+	public $is_transaction;
+	/**
+	 * @var array|false
+	 */
+	public $data;
+	public $reader;
+	/**
+	 * @var string
+	 */
+	public $sql;
+	/**
+	 * @var bool
+	 */
+	public $script;
+	/**
+	 * @var array
+	 */
+	public $required;
+	/**
+	 * @var int|mixed|string
+	 */
+	public $parent_column;
+	/**
+	 * @var int|string
+	 */
+	public $slug_key_column;
+	/**
+	 * @var int|string
+	 */
+	public $slug_value_column;
+	/**
+	 * @var string
+	 */
+	public $where;
+	/**
+	 * @var bool
+	 */
+	public $shouldUserReader;
+	/**
+	 * @var bool
+	 */
+	public $filter;
+	/**
+	 * @var int
+	 */
+	public $recordcount;
+	/**
+	 * @var array|mixed
+	 */
+	public $params;
+	public $column;
+	/**
+	 * @var mixed|string
+	 */
+	public $order;
+	/**
+	 * @var array
+	 */
+	public $with;
 
 	public function __construct()
 	{
@@ -90,7 +183,7 @@ class ODBO extends OObject
 		}
 	}
 
-	public function setDatabaseConnection($dbh)
+	public function setDatabaseConnection(PDO $dbh)
 	{
 		$this->dbh = $dbh;
 		if (!isset($this->table) || $this->table == '') {
@@ -102,19 +195,16 @@ class ODBO extends OObject
 		}
 	}
 
-	public function setReaderDatabaseConnection($reader)
+	public function setReaderDatabaseConnection(PDO $reader)
 	{
 		$this->reader = $reader;
-		if (!isset($this->table) || $this->table == '') {
-			return;
-		}
 	}
 
 	/*************************************************************************************************************
 	 * SCRIPTTABLE
 	 *************************************************************************************************************/
 
-	public function scriptTable($params = array())
+	public function scriptTable()
 	{
 		$sql = 'CREATE DATABASE IF NOT EXISTS ' . __OBRAY_DATABASE_NAME__ . ';';
 		$statement = $this->dbh->prepare($sql);
@@ -278,7 +368,9 @@ class ODBO extends OObject
 	/********************************************************************
 	 *
 	 * ADD function
-	 ********************************************************************/
+	 *******************************************************************
+	 * @throws \Exception
+	 */
 
 	public function add($params = array())
 	{
@@ -323,16 +415,16 @@ class ODBO extends OObject
 				if (isset($this->required[$key])) {
 					unset($this->required[$key]);
 				}
-				if (isset($def['data_type']) && !empty($this->data_types[$data_type['data_type']]['validation_regex']) && !preg_match($this->data_types[$data_type['data_type']]['validation_regex'], $params[$key]) && $params[$key] == NULL) {
-					$this->throwError((isset($def['error_message']) ? $def['error_message'] : isset($def['label'])) ? $def['label'] . ' is invalid.' : $key . ' is invalid.', '500', $key);
+				if (isset($def['data_type']) && !empty($this->data_types[$data_type['data_type']]['validation_regex']) && !preg_match($this->data_types[$data_type['data_type']]['validation_regex'], $param) && $param == NULL) {
+					$this->throwError(($def['error_message'] ?? isset($def['label'])) ? $def['label'] . ' is invalid.' : $key . ' is invalid.', '500', $key);
 				}
 
 				if (isset($def['data_type']) && $def['data_type'] == 'password') {
 					$salt = '$2a$12$' . $this->generateToken();
-					$data[$key] = crypt($params[$key], $salt);
+					$data[$key] = crypt($param, $salt);
 				}
 
-				if (isset($params[$key])) {
+				if (isset($param)) {
 					if (!empty($sql)) {
 						$sql .= ',';
 						$sql_values .= ',';
@@ -345,22 +437,17 @@ class ODBO extends OObject
 
 		if (!empty($this->required)) {
 			foreach ($this->required as $key => $value) {
-				$def = $this->table_definition[$key];
-				$this->throwError((isset($def['error_message']) ? $def['error_message'] : isset($def['label'])) ? $key . ' is required.' : $key . ' is required.', '500', $key);
+				$this->throwError($key . ' is required.', '500', $key);
 			}
 		}
 
 		if ($this->isError()) {
-			$this->throwError(isset($this->general_error) ? $this->general_error : 'There was an error on this form, please make sure the below fields were completed correclty: ');
+			$this->throwError($this->general_error ?? 'There was an error on this form, please make sure the below fields were completed correctly: ');
 			return $this;
 		}
 
 		if ($this->enable_system_columns) {
-			if (isset($_SESSION['ouser']->ouser_id)) {
-				$ocu = $_SESSION['ouser']->ouser_id;
-			} else {
-				$ocu = 0;
-			}
+			$ocu = $_SESSION['ouser']->ouser_id ?? 0;
 			$system_columns = ", OCDT, OCU ";
 			$system_values = ', \'' . date('Y-m-d H:i:s') . '\', ' . $ocu;
 		} else {
@@ -379,7 +466,7 @@ class ODBO extends OObject
 		}
 		try {
 			$this->script = $statement->execute();
-		} catch (\Exception $e) {
+		} catch (Exception $e) {
 			$this->script = $this->handleDBError($e, $statement);
 		}
 		if (empty($this->is_transaction)) {
@@ -396,7 +483,9 @@ class ODBO extends OObject
 
 	/********************************************************************
 	 * UPDATE function
-	 ********************************************************************/
+	 *******************************************************************
+	 * @throws \Exception
+	 */
 
 	public function update($params = array())
 	{
@@ -429,17 +518,17 @@ class ODBO extends OObject
 				}
 				$data_type = $this->getDataType($def);
 
-				if (isset($def['required']) && $def['required'] === TRUE && (!isset($params[$key]) || $params[$key] === NULL || $params[$key] === '')) {
-					$this->throwError((isset($def['error_message']) ? $def['error_message'] : isset($def['label'])) ? $def['label'] . ' is required.' : $key . ' is required.', 500, $key);
+				if (isset($def['required']) && $def['required'] === TRUE && (!isset($param) || $param === NULL || $param === '')) {
+					$this->throwError(($def['error_message'] ?? isset($def['label'])) ? $def['label'] . ' is required.' : $key . ' is required.', 500, $key);
 				}
 
-				if ((isset($def['data_type']) && !empty($this->data_types[$data_type['data_type']]['validation_regex']) && !preg_match($this->data_types[$data_type['data_type']]['validation_regex'], $params[$key])) && $params[$key] == NULL) {
-					$this->throwError((isset($def['error_message']) ? $def['error_message'] : isset($def['label'])) ? $def['label'] . ' is invalid.' : $key . ' is invalid.', 500, $key);
+				if ((isset($def['data_type']) && !empty($this->data_types[$data_type['data_type']]['validation_regex']) && !preg_match($this->data_types[$data_type['data_type']]['validation_regex'], $param)) && $param == NULL) {
+					$this->throwError(($def['error_message'] ?? isset($def['label'])) ? $def['label'] . ' is invalid.' : $key . ' is invalid.', 500, $key);
 				}
 
 				if (isset($def['data_type']) && $def['data_type'] == 'password') {
 					$salt = '$2a$12$' . $this->generateToken();
-					$data[$key] = crypt($params[$key], $salt);
+					$data[$key] = crypt($param, $salt);
 				}
 
 				if (!empty($sql)) {
@@ -476,16 +565,16 @@ class ODBO extends OObject
 
 		$this->sql = ' UPDATE ' . $this->table . ' SET ' . $sql . $system_columns . ' WHERE ' . $this->primary_key_column . ' = :' . $this->primary_key_column . ' ';
 		$statement = $this->dbh->prepare($this->sql);
-		foreach ($data as $key => $dati) {
-			if ($dati == 'NULL') {
+		foreach ($data as $key => $datum) {
+			if ($datum == 'NULL') {
 				$statement->bindValue($key, null, PDO::PARAM_NULL);
 			} else {
-				$statement->bindValue($key, $dati);
+				$statement->bindValue($key, $datum);
 			}
 		}
 		try {
 			$this->script = $statement->execute();
-		} catch (\Exception $e) {
+		} catch (Exception $e) {
 			$this->script = $this->handleDBError($e, $statement);
 		}
 
@@ -504,7 +593,9 @@ class ODBO extends OObject
 	/********************************************************************
 	 *
 	 * DELETE function
-	 ********************************************************************/
+	 *******************************************************************
+	 * @throws \Exception
+	 */
 
 	public function delete($params = array())
 	{
@@ -531,7 +622,7 @@ class ODBO extends OObject
 		}
 		try {
 			$this->script = $statement->execute();
-		} catch (\Exception $e) {
+		} catch (Exception $e) {
 			$this->script = $this->handleDBError($e, $statement);
 		}
 
@@ -541,7 +632,9 @@ class ODBO extends OObject
 	/********************************************************************
 	 *
 	 * GET function
-	 ********************************************************************/
+	 *******************************************************************
+	 * @throws \Exception
+	 */
 
 	public function get($params = array())
 	{
@@ -564,14 +657,14 @@ class ODBO extends OObject
 			unset($original_params['start']);
 			unset($original_params['rows']);
 		}
-		if (isset($params['filter']) && ($params['filter'] == 'false' || !$filter)) {
+		if (isset($params['filter']) && $params['filter'] == 'false') {
 			$filter = FALSE;
 			unset($params['filter']);
 		}
 		if (isset($params['order_by'])) {
 			$order_by = explode('|', $params['order_by']);
 			$columns = array();
-			foreach ($order_by as $i => &$order) {
+			foreach ($order_by as &$order) {
 				$order = explode(':', $order);
 				if (!empty($order) && array_key_exists($order[0], $this->table_definition)) {
 					$columns[] = $order[0];
@@ -606,11 +699,9 @@ class ODBO extends OObject
 
 		$columns = array();
 		$withs_to_pass = array();
-		$filter_columns = array();
 
 		foreach ($this->table_definition as $column => $def) {
 			if (isset($def['data_type']) && $def['data_type'] == "filter") {
-				$filter_columns[] = $columns;
 				continue;
 			}
 			if (isset($def['data_type']) && $def['data_type'] == 'password' && isset($params[$column])) {
@@ -619,9 +710,6 @@ class ODBO extends OObject
 				unset($params[$column]);
 			}
 			$columns[] = $this->table . '.' . $column;
-			if (array_key_exists('primary_key', $def)) {
-				$primary_key = $column;
-			}
 
 			// HANDLE OPTIONS
 			if (!empty($params[$column]) && !empty($def["options"])) {
@@ -638,17 +726,14 @@ class ODBO extends OObject
 					$name = $with;
 					if (!is_array($def[$with])) {
 						$with = explode(':', $def[$with]);
-						$with[] = $column;
-						$with[] = $name;
 					} else {
 						$with = array();
-						$with[] = $column;
-						$with[] = $name;
 					}
+					$with[] = $column;
+					$with[] = $name;
 				}
 			}
 		}
-
 
 		$filter_join = "";
 		foreach ($withs as $i => $w) {
@@ -687,7 +772,7 @@ class ODBO extends OObject
 		}
 		try {
 			$statement->execute();
-		} catch (\Exception $e) {
+		} catch (Exception $e) {
 			$this->handleDBError($e, $statement);
 		}
 		$statement->setFetchMode(PDO::FETCH_NUM);
@@ -755,11 +840,11 @@ class ODBO extends OObject
 				parse_str($with[0], $new_params);
 				$sub_params = array_replace($sub_params, $new_params);
 
-				if (!empty($this->data) && !empty($withs) && in_array('children', $withs[0])) {
+				if (in_array('children', $withs[0])) {
 					$sub_params['with'] = 'children';
 				}
 				$with = $this->route($with_components['path'] . 'get/', $sub_params)->data;
-				foreach ($with as &$w) {
+				foreach ($with as $w) {
 					if (isset($ids_to_index[$w->$with_key])) {
 						foreach ($ids_to_index[$w->$with_key] as $index) {
 							if (!isset($this->data[$index]->$with_name)) {
@@ -786,7 +871,7 @@ class ODBO extends OObject
 
 		if ($this->table == 'ousers' || (isset($this->user_session) && $this->table == $this->user_session)) {
 			foreach ($this->data as $i => &$data) {
-				if (isset($password_column) && strcmp($data->$password_column, crypt($password_value, $data->$password_column)) != 0) {
+				if (isset($password_column) && strcmp($data->$password_column, crypt($password_value ?? null, $data->$password_column)) != 0) {
 					unset($this->data[$i]);
 				}
 				unset($data->ouser_password);
@@ -796,7 +881,7 @@ class ODBO extends OObject
 		//Restructure the result set to be keyed by the column name provided
 		if (!empty($original_params['keyed']) && !empty($this->data[0]->{$original_params['keyed']})) {
 			$keyed_data = array();
-			foreach ($this->data as $key => $data) {
+			foreach ($this->data as $data) {
 				if (isset($data->{$original_params['keyed']}))
 					$keyed_data[strtolower($data->{$original_params['keyed']})] = $data;
 			}
@@ -824,7 +909,8 @@ class ODBO extends OObject
 					$this->primary_key_column = $key;
 				}
 			}
-			return ' INNER JOIN ' . strtolower($obj->table) . ' ON ' . strtolower($obj->table) . '.' . $primary_key . ' = ' . strtolower($this->table) . '.' . $this->primary_key_column . ' ';
+			// TODO: What if $primary_key is undefined? the SQL will fail, so do we want to throw an exception here?
+			return ' INNER JOIN ' . strtolower($obj->table) . ' ON ' . strtolower($obj->table) . '.' . ($primary_key ?? null) . ' = ' . strtolower($this->table) . '.' . $this->primary_key_column . ' ';
 		} else {
 			return '';
 		}
@@ -887,7 +973,7 @@ class ODBO extends OObject
 					$param = array(0 => $param);
 				}
 
-				foreach ($param as &$param_value) {
+				foreach ($param as $param_value) {
 
 					if (empty($where)) {
 						$new_key = '';
@@ -946,38 +1032,13 @@ class ODBO extends OObject
 		$where_str = '';
 		if (!empty($where)) {
 			$where_str = ' WHERE ';
-			foreach ($where as $key => $value) {
-
-				$val = array();
-				foreach ($values as $i => $v) {
-					//if( !empty($v["value"]) && $v["value"] == 'NULL' ){ $val = &$values[$i]; break; }
-				}
-
-				if (!empty($val) && $val["value"] == 'NULL') {
-
-					if ($value['operator'] === '=') {
-						$where_str .= ' ' . $value['join'] . ' ' . $value['key'] . ' IS NULL ';
-					} else if ($value['operator'] === '!=') {
-						$where_str .= ' ' . $value['join'] . ' ' . $value['key'] . ' IS NOT NULL ';
-					}
-				} else {
-					$where_str .= ' ' . $value['join'] . ' ' . $value['key'] . ' ' . $value['operator'] . ' ' . $value['value'] . ' ';
-				}
+			foreach ($where as $value) {
+				$where_str .= ' ' . $value['join'] . ' ' . $value['key'] . ' ' . $value['operator'] . ' ' . $value['value'] . ' ';
 				//if( $value['operator'] == '!=' ){ $where_str .= ' OR '.$value['key'].' IS NULL '; }
 			}
 		}
 
 		return $where_str;
-	}
-
-	/********************************************************************
-	 *
-	 * DUMP
-	 ********************************************************************/
-
-	public function dump($params = array())
-	{
-		//exec('mysqldump --user='.__OBRAY_DATABASE_USERNAME__.' --password='.__OBRAY_DATABASE_PASSWORD__.' --host='.__OBRAY_DATABASE_HOST__.' '.__OBRAY_DATABASE_NAME__.' '.$this->table.' | gzip > '.dirname(__FILE__).'backups/'.$this->table.'-'.time().'.sql.gz');
 	}
 
 	/********************************************************************
@@ -1027,8 +1088,7 @@ class ODBO extends OObject
 			$count = count($statement->fetchAll());
 			++$i;
 		}
-		return $params['slug'];
-
+		return $params['slug'] ?? null;
 	}
 
 	/********************************************************************
@@ -1052,10 +1112,14 @@ class ODBO extends OObject
 		return $this;
 	}
 
+	/**
+	 * @param $a
+	 * @param $b
+	 * @return bool|void
+	 */
 	private function sortCallback($a, $b)
 	{
 		$column = $this->column;
-		$filters = array();
 
 		$with_array = $this->with;
 		if (!empty($this->with)) {
@@ -1118,7 +1182,6 @@ class ODBO extends OObject
 				} else {
 					return FALSE;
 				}
-				break;
 			case 'desc':
 			case 'DESC':
 				if ($a < $b) {
@@ -1126,7 +1189,6 @@ class ODBO extends OObject
 				} else {
 					return FALSE;
 				}
-				break;
 		}
 	}
 
@@ -1141,9 +1203,8 @@ class ODBO extends OObject
 			if (!isset($this->data) || !is_array($this->data)) {
 				$this->data = array();
 			}
-			foreach ($this->data as $i => $data) {
-				$v = &$this->data[$i];
-				return $v;
+			foreach ($this->data as $data) {
+				return $data;
 			}
 			return reset($this->data);
 		} else {
@@ -1167,7 +1228,7 @@ class ODBO extends OObject
 			$statement = ($forceReader && !empty($this->reader)) ? $this->reader->prepare($sql) : $this->dbh->prepare($sql);
 			try {
 				$result = $statement->execute($bind);
-			} catch (\Exception $e) {
+			} catch (Exception $e) {
 				$result = $this->handleDBError($e, $statement);
 			}
 			$this->data = [];
@@ -1254,7 +1315,9 @@ class ODBO extends OObject
 	/********************************************************************
 	 *
 	 * COUNT
-	 ********************************************************************/
+	 *******************************************************************
+	 * @throws \Exception
+	 */
 
 	public function count($params = array())
 	{
@@ -1271,7 +1334,7 @@ class ODBO extends OObject
 		}
 		try {
 			$statement->execute();
-		} catch (\Exception $e) {
+		} catch (Exception $e) {
 			$this->handleDBError($e, $statement);
 		}
 		while ($row = $statement->fetch()) {
@@ -1285,7 +1348,9 @@ class ODBO extends OObject
 	/********************************************************************
 	 *
 	 * RAND
-	 ********************************************************************/
+	 *******************************************************************
+	 * @throws \Exception
+	 */
 
 	public function random($params = array())
 	{
@@ -1306,7 +1371,7 @@ class ODBO extends OObject
 		}
 		try {
 			$statement->execute();
-		} catch (\Exception $e) {
+		} catch (Exception $e) {
 			$this->handleDBError($e, $statement);
 		}
 		$statement->setFetchMode(PDO::FETCH_NUM);
@@ -1344,7 +1409,7 @@ class ODBO extends OObject
 		$statement = $this->dbh->prepare('TRUNCATE TABLE ' . $this->table);
 		try {
 			$statement->execute();
-		} catch (\Exception $e) {
+		} catch (Exception $e) {
 			$this->handleDBError($e, $statement);
 		}
 	}
@@ -1367,7 +1432,7 @@ class ODBO extends OObject
 			}
 			try {
 				$statement->execute();
-			} catch (\Exception $e) {
+			} catch (Exception $e) {
 				$this->handleDBError($e, $statement);
 			}
 			while ($row = $statement->fetch()) {
@@ -1375,17 +1440,18 @@ class ODBO extends OObject
 			}
 			$this->data = $this->data[0];
 			unset($this->data[0]);
-			return $this;
 		} else {
 			$this->throwError('Column does not exist.');
-			return $this;
 		}
+		return $this;
 	}
 
 	/********************************************************************
 	 *
 	 * UNIQUE
-	 ********************************************************************/
+	 *******************************************************************
+	 * @throws \Exception
+	 */
 
 	public function unique($params = array())
 	{
@@ -1405,7 +1471,7 @@ class ODBO extends OObject
 			}
 			try {
 				$statement->execute();
-			} catch (\Exception $e) {
+			} catch (Exception $e) {
 				$this->handleDBError($e, $statement);
 			}
 			while ($row = $statement->fetch()) {
@@ -1421,7 +1487,9 @@ class ODBO extends OObject
 	/********************************************************************
 	 *
 	 * LOG
-	 ********************************************************************/
+	 *******************************************************************
+	 * @throws \Exception
+	 */
 
 	protected function log($object, $label = null)
 	{
@@ -1436,10 +1504,10 @@ class ODBO extends OObject
 		$statement->bindValue('olog_label', $label, PDO::PARAM_STR);
 		$statement->bindValue('olog_data', json_encode($object, JSON_PRETTY_PRINT), PDO::PARAM_STR);
 		$statement->bindValue('OCDT', date('Y-m-d H:i:s'), PDO::PARAM_STR);
-		$statement->bindValue('OCU', isset($_SESSION['ouser']->ouser_id) ? $_SESSION['ouser']->ouser_id : 0, PDO::PARAM_INT);
+		$statement->bindValue('OCU', $_SESSION['ouser']->ouser_id ?? 0, PDO::PARAM_INT);
 		try {
 			$statement->execute();
-		} catch (\Exception $e) {
+		} catch (Exception $e) {
 			$this->handleDBError($e, $statement);
 		}
 	}
@@ -1460,11 +1528,14 @@ class ODBO extends OObject
 	 *
 	 * Handles erros from PDO, attempt to correct failed DB connections and retries, otherwise
 	 * raises new exception.
+	 * @throws \Exception
 	 */
 
-	public function handleDBError(\Exception $e, $statement, $count = 1)
+	public function handleDBError(Exception $e, $statement, $count = 1)
 	{
-		if ($count >= 3) throw new \Exception($e->getErrorMessage() . ' (failed ' . $count . ' times)');
+		if ($count >= 3) {
+			throw new Exception("Failed $count times", 0, $e);
+		}
 		$errors = [
 			'server has gone away',
 			'no connection to the server',
@@ -1491,12 +1562,12 @@ class ODBO extends OObject
 				$this->reader = getReaderDatabaseConnection(true);
 				try {
 					return $statement->execute();
-				} catch (\Exception $e) {
+				} catch (Exception $e) {
 					return $this->handleDBError($e, $statement, ++$count);
 				}
 			}
 		}
 
-		return null;
+		throw new Exception('Unrecoverable PDO error', 0, $e);
 	}
 }
