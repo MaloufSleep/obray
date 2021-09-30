@@ -119,9 +119,6 @@ class ODBO extends OObject
 		if (!isset($this->table_definition)) {
 			$this->table_definition = array();
 		}
-		if (!isset($this->primary_key_column)) {
-			$this->primary_key_column = '';
-		}
 
 		if (!defined('__OBRAY_DATATYPES__')) {
 
@@ -148,16 +145,18 @@ class ODBO extends OObject
 	public function commitTransaction()
 	{
 		if (!$this->is_transaction) {
-			return;  //This likely means that the transaction was rolled back and should therefore not be committed. (that or there was never a transaction to begin with).
+			return false;  //This likely means that the transaction was rolled back and should therefore not be committed. (that or there was never a transaction to begin with).
 		}
-		$this->dbh->commit();
+		$success = $this->dbh->commit();
 		$this->is_transaction = FALSE;
+		return $success;
 	}
 
 	public function rollbackTransaction()
 	{
-		$this->dbh->rollBack();
+		$success = $this->dbh->rollBack();
 		$this->is_transaction = FALSE;
+		return $success;
 	}
 
 	public function getOptions($params = array())
