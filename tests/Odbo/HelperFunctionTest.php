@@ -80,4 +80,44 @@ class HelperFunctionTest extends OdboTestCase
 		$this->testModel->getOptions(['column' => 'column_int', 'value' => 'String at index 0']);
 		$this->assertSame(0, $this->testModel->data);
 	}
+
+	public function testSetDBConnection()
+	{
+		$this->assertNotSame($this->pdo, $this->testModel->dbh);
+		$this->assertNull($this->testModel->reader);
+		$this->testModel->setDatabaseConnection($this->pdo);
+		$this->testModel->setReaderDatabaseConnection($this->pdo);
+		$this->assertSame($this->pdo, $this->testModel->dbh);
+		$this->assertSame($this->pdo, $this->testModel->reader);
+	}
+
+	public function testGetFirst()
+	{
+		$this->testModel->data = [
+			[
+				'column_int' => 30,
+			],
+			[
+				'column_int' => 15,
+			],
+		];
+
+		$first = $this->testModel->getFirst();
+
+		$this->assertSame([
+			'column_int' => 30,
+		], $first);
+
+		$this->testModel->data = null;
+
+		$first = $this->testModel->getFirst();
+
+		$this->assertSame(false, $first);
+
+		$this->testModel->throwError('generic error here');
+
+		$first = $this->testModel->getFirst();
+
+		$this->assertSame(0, $first);
+	}
 }

@@ -185,152 +185,11 @@ class ODBO extends OObject
 	public function setDatabaseConnection(PDO $dbh)
 	{
 		$this->dbh = $dbh;
-		if (!isset($this->table) || $this->table == '') {
-			return;
-		}
-		if (__OBRAY_DEBUG_MODE__) {
-			$this->scriptTable();
-			$this->alterTable();
-		}
 	}
 
 	public function setReaderDatabaseConnection(PDO $reader)
 	{
 		$this->reader = $reader;
-	}
-
-	/*************************************************************************************************************
-	 * SCRIPTTABLE
-	 *************************************************************************************************************/
-
-	public function scriptTable()
-	{
-		$sql = 'CREATE DATABASE IF NOT EXISTS ' . __OBRAY_DATABASE_NAME__ . ';';
-		$statement = $this->dbh->prepare($sql);
-		$statement->execute();
-
-		if (empty($this->dbh)) {
-			return $this;
-		}
-
-		$sql = '';
-		$data_types = unserialize(__OBRAY_DATATYPES__);
-
-		foreach ($this->table_definition as $name => $def) {
-			if (isset($def['data_type']) && $def['data_type'] == "filter") {
-				continue;
-			}
-			if (array_key_exists('store', $def) == FALSE || (array_key_exists('store', $def) == TRUE && $def['store'] == TRUE)) {
-
-				if (!empty($sql)) {
-					$sql .= ',';
-				}
-				if (isset($def['data_type'])) {
-					$data_type = $this->getDataType($def);
-					$sql .= $name . str_replace('size', str_replace(')', '', $data_type['size']), $data_types[$data_type['data_type']]['sql']);
-				}
-
-				if (array_key_exists('primary_key', $def) && $def['primary_key'] === TRUE) {
-					$this->primary_key_column = $name;
-					$sql .= $name . ' INT UNSIGNED NOT NULL AUTO_INCREMENT ';
-				}
-			}
-		}
-
-		$sql = 'CREATE TABLE IF NOT EXISTS ' . $this->table . ' ( ' . $sql;
-		if ($this->enable_system_columns) {
-			$sql .= ', OCDT DATETIME, OCU INT UNSIGNED, OMDT DATETIME, OMU INT UNSIGNED ';
-		}
-		if (!empty($this->primary_key_column)) {
-			$sql .= ', PRIMARY KEY (' . $this->primary_key_column . ') ) ENGINE=' . __OBRAY_DATABASE_ENGINE__ . ' DEFAULT CHARSET=' . __OBRAY_DATABASE_CHARACTER_SET__ . '; ';
-		}
-
-		$this->sql = $sql;
-		$statement = $this->dbh->prepare($sql);
-		$this->script = $statement->execute();
-		return $this;
-	}
-
-	/*************************************************************************************************************
-	 * ALTERTABLE
-	 *************************************************************************************************************/
-
-	public function alterTable()
-	{
-		if (empty($this->dbh)) {
-			return $this;
-		}
-
-		$sql = 'DESCRIBE ' . $this->table . ';';
-		$statement = $this->dbh->prepare($sql);
-		$statement->execute();
-
-		$statement->setFetchMode(PDO::FETCH_OBJ);
-		$data = $statement->fetchAll();
-
-		$temp_def = $this->table_definition;
-		$obray_fields = array(3 => 'OCDT', 4 => 'OCU', 5 => 'OMDT', 6 => 'OMU');
-		foreach ($obray_fields as $of) {
-			unset($this->table_definition[$of]);
-		}
-
-		$data_types = unserialize(__OBRAY_DATATYPES__);
-
-		foreach ($data as $def) {
-			if (isset($def->data_type) && $def->data_type == "filter") {
-				continue;
-			}
-			if (array_key_exists('store', $def) == FALSE || (array_key_exists('store', $def) == TRUE && $def['store'] == TRUE)) {
-
-				if (array_search($def->Field, $obray_fields) === FALSE) {
-					if (isset($this->table_definition[$def->Field])) {
-
-						if ($this->enable_data_type_changes && isset($this->table_definition[$def->Field]['data_type'])) {
-							$data_type = $this->getDataType($this->table_definition[$def->Field]);
-							if (str_replace('size', $data_type['size'], $data_types[$data_type['data_type']]['my_sql_type']) != $def->Type) {
-								if (!isset($this->table_alterations)) {
-									$this->table_alterations = array();
-								}
-								$sql = 'ALTER TABLE ' . $this->table . ' MODIFY COLUMN ' . $def->Field . ' ' . str_replace('size', $data_type['size'], $data_types[$data_type['data_type']]['sql']);
-								$statement = $this->dbh->prepare($sql);
-								$this->table_alterations[] = $statement->execute();
-							}
-						}
-						unset($this->table_definition[$def->Field]);
-
-					} else {
-						if ($this->enable_column_removal && isset($_REQUEST['enableDrop'])) {
-							if (!isset($this->table_alterations)) {
-								$this->table_alterations = array();
-							}
-							$sql = 'ALTER TABLE ' . $this->table . ' DROP COLUMN ' . $def->Field . ' ';
-							$statement = $this->dbh->prepare($sql);
-							$this->table_alterations[] = $statement->execute();
-						}
-					}
-				}
-			}
-		}
-
-		if ($this->enable_column_additions) {
-			foreach ($this->table_definition as $key => $def) {
-				if (isset($def['data_type']) && $def['data_type'] == "filter") {
-					continue;
-				}
-				if (array_key_exists('store', $def) == FALSE || (array_key_exists('store', $def) == TRUE && $def['store'] == TRUE)) {
-					if (!isset($this->table_alterations)) {
-						$this->table_alterations = array();
-					}
-					$data_type = $this->getDataType($def);
-					$sql = 'ALTER TABLE ' . $this->table . ' ADD (' . $key . ' ' . str_replace('size', $data_type['size'], $data_types[$data_type['data_type']]['sql']) . ')';
-					$statement = $this->dbh->prepare($sql);
-					$this->table_alterations[] = $statement->execute();
-				}
-			}
-		}
-
-		$this->table_definition = $temp_def;
-		return $this;
 	}
 
 	/********************************************************************
@@ -1133,7 +992,7 @@ class ODBO extends OObject
 
 			$final_a = new stdClass();
 			foreach ($filters_a as $a) {
-				foreach ($this->with as $i => $with) {
+				foreach ($this->with as $with) {
 					if (!empty($a->$with)) {
 						foreach ($a->$with as $a_item) {
 							foreach ($this->params as $key => $value) {
@@ -1148,7 +1007,7 @@ class ODBO extends OObject
 
 			$final_b = new stdClass();
 			foreach ($filters_b as $b) {
-				foreach ($this->with as $i => $with) {
+				foreach ($this->with as $with) {
 					if (!empty($b->$with)) {
 						foreach ($b->$with as $b_item) {
 							foreach ($this->params as $key => $value) {
@@ -1201,9 +1060,6 @@ class ODBO extends OObject
 		if (empty($this->errors)) {
 			if (!isset($this->data) || !is_array($this->data)) {
 				$this->data = array();
-			}
-			foreach ($this->data as $data) {
-				return $data;
 			}
 			return reset($this->data);
 		} else {
