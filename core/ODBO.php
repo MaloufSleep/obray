@@ -11,7 +11,7 @@ class ODBO extends OObject
 	public $dbh;
 	public $enable_system_columns = TRUE;
 
-	private $shouldUseReader = true;
+	private static $shouldUseReader = true;
 	/**
 	 * @var array
 	 */
@@ -80,10 +80,6 @@ class ODBO extends OObject
 	/**
 	 * @var bool
 	 */
-	public $shouldUserReader;
-	/**
-	 * @var bool
-	 */
 	public $filter;
 	/**
 	 * @var int
@@ -134,6 +130,21 @@ class ODBO extends OObject
 				'password' => array('sql' => ' varchar(255) ', 'my_sql_type' => 'varchar(255)', 'validation_regex' => '')
 			)));
 		}
+	}
+	/**
+	 * @param bool $shouldUseReader
+	 */
+	public static function setUseReader($shouldUseReader)
+	{
+		self::$shouldUseReader = $shouldUseReader;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function getShouldUseReader()
+	{
+		return self::$shouldUseReader;
 	}
 
 	public function startTransaction()
@@ -332,7 +343,7 @@ class ODBO extends OObject
 			if (!empty($option_is_set)) {
 				$get_params["with"] = "options";
 			}
-			$this->shouldUseReader = false;
+			static::$shouldUseReader = false;
 			$this->get($get_params);
 		}
 
@@ -441,7 +452,7 @@ class ODBO extends OObject
 			if (!empty($option_is_set)) {
 				$get_params["with"] = "options";
 			}
-			$this->shouldUseReader = false;
+			static::$shouldUseReader = false;
 			$this->get($get_params);
 		}
 
@@ -619,8 +630,7 @@ class ODBO extends OObject
 		$where_str = $this->getWhere($params, $values, $original_params);
 
 		$this->sql = 'SELECT ' . implode(',', $columns) . ' FROM ' . $this->table . $this->getJoin() . $filter_join . $where_str . $order_by . $limit;
-		$statement = (!empty($this->reader) && $this->shouldUseReader) ? $this->reader->prepare($this->sql) : $this->dbh->prepare($this->sql);
-		$this->shouldUserReader = true;
+		$statement = (!empty($this->reader) && static::$shouldUseReader) ? $this->reader->prepare($this->sql) : $this->dbh->prepare($this->sql);
 		foreach ($values as $value) {
 			if (is_integer($value)) {
 				$statement->bindValue($value['key'], trim($value['value']), PDO::PARAM_INT);
