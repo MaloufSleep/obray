@@ -4,9 +4,9 @@
   "license": "MIT",
   "homepage": "https://www.obray.net",
   "require": {
-    "php": "^7.1",
+    "php": "^7.4",
     "ext-curl": "*",
-    "psr/container": "^2.0",
+    "psr/container": "^1|^2",
     "symfony/console": "^5.3",
     "ext-pdo": "*",
     "ext-json": "*",
