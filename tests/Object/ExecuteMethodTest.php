@@ -18,7 +18,7 @@ class ExecuteMethodTest extends TestCase
 		$this->assertError($response);
 		$this->assertJsonStringEqualsJsonString(json_encode([
 			'general' => [
-				'Expected exception thrown',
+				'Expected exception thrown in throwException',
 			],
 		]), json_encode($response->errors));
 	}

@@ -26,7 +26,7 @@ class cTestController extends OObject
 	 */
 	public function throwException()
 	{
-		throw new Exception('Expected exception thrown');
+		throw new Exception('Expected exception thrown in ' . __FUNCTION__);
 	}
 
 	/**
@@ -34,7 +34,7 @@ class cTestController extends OObject
 	 */
 	public function index()
 	{
-		throw new Exception('Expected exception thrown in index');
+		throw new Exception('Expected exception thrown in ' . __FUNCTION__);
 	}
 
 	public function getPermissions()

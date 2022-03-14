@@ -62,9 +62,10 @@ class CreateObjectTest extends TestCase
 		$response = $this->router->route('app/Nested/NestedController');
 
 		$this->assertInstanceOf(cNestedController::class, $response);
-		$this->assertObjectNotHasAttribute('data', $response);
 		$this->assertFalse($response->isError());
 		$this->assertObjectNotHasAttribute('errors', $response);
+		$this->assertObjectHasAttribute('data', $response);
+		$this->assertSame('index', $response->data);
 	}
 
 	public function testCreatingViaContainer()
@@ -87,15 +88,14 @@ class CreateObjectTest extends TestCase
 
 		$this->router::setContainerSingleton($container);
 
-		$object = $this->router->route('app/oTestModel');
+		$object = $this->router->route('app/oFakeTestModel');
 
 		$this->assertError();
 		$this->assertSame($this->router, $object);
 		$this->assertNotNull($object->errors);
 		$this->assertJsonStringEqualsJsonString(json_encode([
-			'general' => [''],
 			'notfound' => [
-				'Route not found object: app/oTestModel',
+				'Route not found object: /oFakeTestModel',
 			]
 		]), json_encode($object->errors));
 	}
