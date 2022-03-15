@@ -373,7 +373,7 @@ class OObject
 	{
 		$namespace_components = explode('/', $this->path);
 		$namespace_components = array_filter($namespace_components, function ($item) {
-			return !empty($item);
+			return !empty($item) && $item !== 'app';
 		});
 		array_pop($namespace_components);
 		$namespace_str = '/' . implode('/', $namespace_components);
@@ -399,9 +399,10 @@ class OObject
 	{
 		$path = '';
 		$isNamespacedPath = false;
-		$namespacedControllersPath = $base_path . "app/controllers/";
-		$namespacedModelsPath = $base_path . "app/models/";
-		$deprecatedModelsPath = dirname($namespacedModelsPath, 2) . "/models/";
+		$deprecatedControllersPath = __OBRAY_SITE_ROOT__ . 'controllers/';
+		$namespacedControllersPath = __OBRAY_SITE_ROOT__ . "app/controllers/";
+		$deprecatedModelsPath = __OBRAY_SITE_ROOT__ . 'models/';
+		$namespacedModelsPath = __OBRAY_SITE_ROOT__ . "app/models/";
 		$rPath = array();
 		$obj_name_loop_counter = 0;
 		$obj_name_loop_name_check = "";
@@ -411,10 +412,20 @@ class OObject
 		}
 
 		while (count($path_array) > 0) {
+			if (
+				empty($base_path)
+				&& (
+					is_dir($deprecatedControllersPath . implode('/', $path_array))
+					|| is_dir($namespacedControllersPath . implode('/', $path_array))
+				)
+			) {
+				$path_array[] = $path_array[(count($path_array) - 1)];
+			}
+
 			$obj_name = array_pop($path_array);
 
 			$this->namespaced_controller_path = $namespacedControllersPath . implode('/', $path_array) . '/c' . str_replace(' ', '', ucWords(str_replace('-', ' ', $obj_name))) . '.php';
-			$this->deprecated_controller_path = $this->getDeprecatedControllerPath($base_path, $path_array, $obj_name);
+			$this->deprecated_controller_path = $deprecatedControllersPath . implode('/', $path_array) . '/c' . str_replace(' ', '', ucWords(str_replace('-', ' ', $obj_name))) . '.php';
 
 			$this->namespaced_model_path = $namespacedModelsPath . implode('/', $path_array) . '/' . $obj_name . '.php';
 			$this->deprecated_model_path = $deprecatedModelsPath . implode('/', $path_array) . '/' . $obj_name . '.php';
@@ -447,7 +458,9 @@ class OObject
 					}
 				}
 
-				$path = '/index/';
+				if (empty($path)) {
+					$path = '/index/';
+				}
 			}
 
 			if (!empty($objectType)) {
@@ -531,9 +544,9 @@ class OObject
 		return $this;
 	}
 
-	protected function getDeprecatedControllerPath(string $basePath, array $pathArray, string $objectName)
+	protected function getDeprecatedControllerPath(array $pathArray, string $objectName)
 	{
-		$deprecatedControllersPath = $basePath . "controllers/";
+		$deprecatedControllersPath = __OBRAY_SITE_ROOT__ . "controllers/";
 
 		if (is_dir($deprecatedControllersPath . implode('/', $pathArray) . '/' . $objectName)) {
 			$pathArray[] = $objectName;
