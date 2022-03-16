@@ -4,6 +4,10 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * @property mixed $data
+ * @property mixed $params
+ */
 class OObject
 {
 	// private data members
