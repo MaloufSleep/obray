@@ -401,7 +401,7 @@ class OObject
 		$isNamespacedPath = false;
 		$deprecatedControllersPath = __OBRAY_SITE_ROOT__ . 'controllers/';
 		$namespacedControllersPath = __OBRAY_SITE_ROOT__ . "app/controllers/";
-		$deprecatedModelsPath = __OBRAY_SITE_ROOT__ . 'models/';
+		$deprecatedModelsPath = $base_path;
 		$namespacedModelsPath = __OBRAY_SITE_ROOT__ . "app/models/";
 		$rPath = array();
 		$obj_name_loop_counter = 0;

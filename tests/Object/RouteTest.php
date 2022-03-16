@@ -201,7 +201,7 @@ class RouteTest extends TestCase
 
 	public function testLegacyModelCreateObject()
 	{
-		$object = $this->router->route('app/oLegacyModel');
+		$object = $this->router->route('m/oLegacyModel');
 
 		$this->assertNotError();
 		$this->assertNotSame($this->router, $object);
@@ -210,7 +210,7 @@ class RouteTest extends TestCase
 
 	public function testLegacyControllerCreateObject()
 	{
-		$object = $this->router->route('app/LegacyController');
+		$object = $this->router->route('LegacyController');
 
 		$this->assertNotError();
 		$this->assertNotSame($this->router, $object);

@@ -27,6 +27,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
 		define('__OBRAY_ROUTES__', serialize([
 			'obray' => realpath(__DIR__ . '/../core') . '/',
 			'app' => realpath(__DIR__ . '/../test_files') . '/',
+			'm' => realpath(__DIR__ . '/../test_files/models') . '/',
 		]));
 		define('__OBRAY_SITE_ROOT__', realpath(__DIR__ . '/../test_files') . '/');
 		define('__OBRAY_NAMESPACE_ROOT__', realpath(__DIR__ . '/../test_files') . '/');
