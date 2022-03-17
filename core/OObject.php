@@ -1,6 +1,6 @@
 <?php
 
-use Psr\Container\ContainerInterface;
+use Illuminate\Contracts\Container\Container;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -17,7 +17,7 @@ class OObject
 	private $missing_path_handler_path;                                                            // the path of the missing handler
 	private $access;
 	/**
-	 * @var \Psr\Container\ContainerInterface
+	 * @var \Illuminate\Contracts\Container\Container
 	 */
 	private static $container = null;
 
@@ -383,14 +383,14 @@ class OObject
 	}
 
 	/**
-	 * @return \Psr\Container\ContainerInterface
+	 * @return \Illuminate\Contracts\Container\Container
 	 */
 	private static function getContainerSingleton()
 	{
 		return static::$container;
 	}
 
-	public static function setContainerSingleton(?ContainerInterface $container)
+	public static function setContainerSingleton(?Container $container)
 	{
 		static::$container = $container;
 	}
@@ -481,7 +481,7 @@ class OObject
 						//	CREATE OBJECT
 						if ($isNamespacedPath && !is_null(static::getContainerSingleton())) {
 							$container = static::getContainerSingleton();
-							$obj = $container->get($obj_name, [
+							$obj = $container->make($obj_name, [
 								'params' => $params,
 								'direct' => $direct,
 								'rPath' => $rPath

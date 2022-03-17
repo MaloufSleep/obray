@@ -6,11 +6,11 @@
   "require": {
     "php": "^7.4",
     "ext-curl": "*",
-    "psr/container": "^1|^2",
     "symfony/console": "^5.3",
     "ext-pdo": "*",
     "ext-json": "*",
-    "ext-openssl": "*"
+    "ext-openssl": "*",
+    "illuminate/contracts": "^8.83"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5"

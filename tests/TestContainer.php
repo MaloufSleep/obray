@@ -2,20 +2,21 @@
 
 namespace tests;
 
-use Psr\Container\ContainerInterface;
+use Closure;
+use Illuminate\Contracts\Container\Container;
 
-class TestContainer implements ContainerInterface
+class TestContainer implements Container
 {
 	protected $resolved = [];
 
 	protected $bindings = [];
 
-	public function instance(string $id, $instance)
+	public function instance($id, $instance)
 	{
 		$this->resolved[$id] = $instance;
 	}
 
-	public function bind(string $id, $callback)
+	public function bind($id, $callback = null, $shared = false)
 	{
 		$this->bindings[$id] = $callback;
 	}
@@ -38,5 +39,90 @@ class TestContainer implements ContainerInterface
 	public function has(string $id): bool
 	{
 		return true;
+	}
+
+	public function bound($abstract)
+	{
+		// TODO: Implement bound() method.
+	}
+
+	public function alias($abstract, $alias)
+	{
+		// TODO: Implement alias() method.
+	}
+
+	public function tag($abstracts, $tags)
+	{
+		// TODO: Implement tag() method.
+	}
+
+	public function tagged($tag)
+	{
+		// TODO: Implement tagged() method.
+	}
+
+	public function bindIf($abstract, $concrete = null, $shared = false)
+	{
+		// TODO: Implement bindIf() method.
+	}
+
+	public function singleton($abstract, $concrete = null)
+	{
+		// TODO: Implement singleton() method.
+	}
+
+	public function singletonIf($abstract, $concrete = null)
+	{
+		// TODO: Implement singletonIf() method.
+	}
+
+	public function extend($abstract, Closure $closure)
+	{
+		// TODO: Implement extend() method.
+	}
+
+	public function addContextualBinding($concrete, $abstract, $implementation)
+	{
+		// TODO: Implement addContextualBinding() method.
+	}
+
+	public function when($concrete)
+	{
+		// TODO: Implement when() method.
+	}
+
+	public function factory($abstract)
+	{
+		// TODO: Implement factory() method.
+	}
+
+	public function flush()
+	{
+		// TODO: Implement flush() method.
+	}
+
+	public function make($abstract, array $parameters = [])
+	{
+		// TODO: Implement make() method.
+	}
+
+	public function call($callback, array $parameters = [], $defaultMethod = null)
+	{
+		// TODO: Implement call() method.
+	}
+
+	public function resolved($abstract)
+	{
+		// TODO: Implement resolved() method.
+	}
+
+	public function resolving($abstract, Closure $callback = null)
+	{
+		// TODO: Implement resolving() method.
+	}
+
+	public function afterResolving($abstract, Closure $callback = null)
+	{
+		// TODO: Implement afterResolving() method.
 	}
 }
