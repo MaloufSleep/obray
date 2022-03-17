@@ -10,7 +10,7 @@
     "ext-pdo": "*",
     "ext-json": "*",
     "ext-openssl": "*",
-    "illuminate/contracts": "^8.83"
+    "illuminate/contracts": "^8"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5"
