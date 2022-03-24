@@ -4,6 +4,10 @@ use Illuminate\Contracts\Container\Container;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * @property array|mixed $params
+ * @property array $data
+ */
 class OObject
 {
 	// private data members
@@ -385,7 +389,7 @@ class OObject
 	/**
 	 * @return \Illuminate\Contracts\Container\Container
 	 */
-	private static function getContainerSingleton()
+	public static function getContainerSingleton()
 	{
 		return static::$container;
 	}
