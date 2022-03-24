@@ -103,7 +103,7 @@ class TestContainer implements Container
 
 	public function make($abstract, array $parameters = [])
 	{
-		// TODO: Implement make() method.
+		return $this->get($abstract);
 	}
 
 	public function call($callback, array $parameters = [], $defaultMethod = null)

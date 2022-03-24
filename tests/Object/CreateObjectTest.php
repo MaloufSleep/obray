@@ -71,6 +71,9 @@ class CreateObjectTest extends TestCase
 	public function testCreatingViaContainer()
 	{
 		$this->router::setContainerSingleton(new TestContainer());
+		$this->router::getContainerSingleton()->bind(oTestModel::class, function () {
+			return new oTestModel;
+		});
 
 		$object = $this->router->route('app/oTestModel');
 
