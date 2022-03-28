@@ -32,7 +32,7 @@ class TestCase extends \PHPUnit\Framework\TestCase
 		define('__OBRAY_SITE_ROOT__', realpath(__DIR__ . '/../test_files') . '/');
 		define('__OBRAY_NAMESPACE_ROOT__', realpath(__DIR__ . '/../test_files') . '/');
 		define('__OBRAY_APP_NAME__', 'App');
-		define('__APP__', 'App');
+		define('__APP__', 'Obray');
 		define('__OBRAY_DATABASE_HOST__', 'mysql');
 		define('__OBRAY_DATABASE_NAME__', 'obray');
 		define('__OBRAY_DATABASE_USERNAME__', 'obray');
