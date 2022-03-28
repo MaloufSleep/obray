@@ -1,7 +1,19 @@
 <?php
 
+use Illuminate\Contracts\Debug\ExceptionHandler;
+
 class oLog extends OObject
 {
+	/**
+	 * @var \Illuminate\Contracts\Debug\ExceptionHandler
+	 */
+	protected static $exceptionHandler;
+
+	/**
+	 * @var \Monolog\Logger
+	 */
+	protected static $logger;
+
 	public function __construct()
 	{
 		$this->permissions = array(
@@ -12,8 +24,31 @@ class oLog extends OObject
 		);
 	}
 
+	public static function setExceptionHandler(?ExceptionHandler $exceptionHandler)
+	{
+		self::$exceptionHandler = $exceptionHandler;
+	}
+
+	public static function setMonologLogger(?\Monolog\Logger $logger)
+	{
+		self::$logger = $logger;
+	}
+
 	public function logError($oProjectEnum, Exception $exception, $customMessage = "")
 	{
+		if (isset(self::$exceptionHandler)) {
+			if (self::$exceptionHandler->shouldReport($exception)) {
+				self::$exceptionHandler->report($exception);
+			}
+
+			return;
+		}
+
+		if (isset(self::$logger)) {
+			self::$logger->log(\Monolog\Logger::ERROR, $exception->getMessage(), compact('oProjectEnum', 'customMessage'));
+			return;
+		}
+
 		$message = $exception->getMessage() . PHP_EOL;
 		if ($customMessage != "") {
 			$message .= "Custom Message: " . $customMessage . PHP_EOL;
@@ -26,6 +61,11 @@ class oLog extends OObject
 
 	public function logInfo($oProjectEnum, $message)
 	{
+		if (isset(self::$logger)) {
+			self::$logger->log(\Monolog\Logger::INFO, $message, compact('oProjectEnum'));
+			return;
+		}
+
 		$message = date('Y-m-d h:i:s', time()) . ' ' . $message . PHP_EOL;
 		$filepath = $this->getFilePath($oProjectEnum, oLogTypeEnum::INFO);
 		$this->writeLog($filepath, $message);
@@ -33,6 +73,11 @@ class oLog extends OObject
 
 	public function logDebug($oProjectEnum, $message)
 	{
+		if (isset(self::$logger)) {
+			self::$logger->log(\Monolog\Logger::DEBUG, $message, compact('oProjectEnum'));
+			return;
+		}
+
 		$message = date('Y-m-d h:i:s', time()) . ' ' . $message . PHP_EOL;
 		$filepath = $this->getFilePath($oProjectEnum, oLogTypeEnum::DEBUG);
 		$this->writeLog($filepath, $message);
