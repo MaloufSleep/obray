@@ -344,7 +344,7 @@ class ODBO extends OObject
 			if (!empty($option_is_set)) {
 				$get_params["with"] = "options";
 			}
-			static::$shouldUseReader = false;
+			static::setUseReader(false);
 			$this->get($get_params);
 		}
 
@@ -454,7 +454,7 @@ class ODBO extends OObject
 			if (!empty($option_is_set)) {
 				$get_params["with"] = "options";
 			}
-			static::$shouldUseReader = false;
+			static::setUseReader(false);
 			$this->get($get_params);
 		}
 
@@ -632,7 +632,7 @@ class ODBO extends OObject
 		$where_str = $this->getWhere($params, $values, $original_params);
 
 		$this->sql = 'SELECT ' . implode(',', $columns) . ' FROM ' . $this->table . $this->getJoin() . $filter_join . $where_str . $order_by . $limit;
-		$statement = (!empty($this->reader) && static::$shouldUseReader) ? $this->reader->prepare($this->sql) : $this->dbh->prepare($this->sql);
+		$statement = (!empty($this->reader) && static::getShouldUseReader()) ? $this->reader->prepare($this->sql) : $this->dbh->prepare($this->sql);
 		foreach ($values as $value) {
 			if (is_integer($value)) {
 				$statement->bindValue($value['key'], trim($value['value']), PDO::PARAM_INT);
