@@ -992,7 +992,7 @@ class OObject
 
 	public function routeBackground($route)
 	{
-		shell_exec("php -d memory_limit=-1 " . __SELF__ . "tasks.php \"" . $route . "\" > /dev/null 2>&1 &");
+		shell_exec(PHP_BINARY . " -d memory_limit=-1 " . __SELF__ . "tasks.php \"" . $route . "\" > /dev/null 2>&1 &");
 	}
 
 	/***********************************************************************
