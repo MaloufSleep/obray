@@ -33,8 +33,11 @@ class OdboTestCase extends TestCase
 			]
 		);
 
-		$this->pdo->exec('DROP DATABASE IF EXISTS `obray`');
-		$this->pdo->exec('CREATE DATABASE `obray`');
+		$timeZone = $this->pdo->query('SELECT @@session.time_zone')->fetchColumn();
+		date_default_timezone_set($timeZone);
+
+		$this->pdo->exec('DROP DATABASE IF EXISTS `' . __OBRAY_DATABASE_NAME__ . '`');
+		$this->pdo->exec('CREATE DATABASE `' . __OBRAY_DATABASE_NAME__ . '`');
 		$this->pdo->exec('USE ' . __OBRAY_DATABASE_NAME__);
 		$this->pdo->exec('
 			create table `test_table` (
