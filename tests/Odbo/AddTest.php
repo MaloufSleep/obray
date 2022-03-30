@@ -46,7 +46,8 @@ class AddTest extends OdboTestCase
 	public function testAddNullAttribute()
 	{
 		$this->testModel->add([
-			'column_int' => null,
+			'column_int' => 1,
+			'column_string' => null,
 		]);
 
 		$this->assertNotError($this->testModel);
@@ -59,7 +60,9 @@ class AddTest extends OdboTestCase
 		$this->assertObjectHasAttribute('id', $model);
 		$this->assertSame('1', $model->id);
 		$this->assertObjectHasAttribute('column_int', $model);
-		$this->assertSame(null, $model->column_int);
+		$this->assertSame('1', $model->column_int);
+		$this->assertObjectHasAttribute('column_string', $model);
+		$this->assertSame(null, $model->column_string);
 		$this->assertObjectHasAttribute('OCDT', $model);
 		$this->assertSame(date('Y-m-d H:i:s'), $model->OCDT);
 		$this->assertObjectHasAttribute('OMDT', $model);

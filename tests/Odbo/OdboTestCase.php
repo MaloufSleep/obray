@@ -43,7 +43,8 @@ class OdboTestCase extends TestCase
 		$this->pdo->exec('
 			create table `test_table` (
 			    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-			    `column_int` BIGINT UNSIGNED NULL,
+			    `column_int` BIGINT UNSIGNED NOT NULL,
+			    `column_string` varchar(191) NULL,
 			    `OCDT` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
 			    `OMDT` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
 			    `OCU` BIGINT UNSIGNED NOT NULL,
