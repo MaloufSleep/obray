@@ -896,6 +896,10 @@ class ODBO extends OObject
 		$option_is_set = false;
 
 		foreach ($params as $key => $param) {
+			if (!array_key_exists($key, $this->table_definition)) {
+				continue;
+			}
+
 			$def = $this->table_definition[$key];
 			if (!empty($def["options"])) {
 				$options = array_change_key_case($def["options"], CASE_LOWER);

@@ -81,4 +81,35 @@ class UpdateTest extends OdboTestCase
 		$this->assertObjectHasAttribute('OMU', $model);
 		$this->assertSame('0', $model->OMU);
 	}
+
+	public function testUpdateColumnThatDoesNotExist()
+	{
+		$this->testModel->update([
+			'id' => $this->modelId,
+			'column_int' => 1,
+			'column_does_not_exist' => 1,
+		]);
+
+		$this->assertNotError($this->testModel);
+		$this->assertObjectHasAttribute('data', $this->testModel);
+		$this->assertIsArray($data = $this->testModel->data);
+		$this->assertCount(1, $data);
+		$this->assertArrayHasKey(0, $data);
+		$this->assertInstanceOf(stdClass::class, $model = $data[0]);
+
+		$this->assertObjectHasAttribute('id', $model);
+		$this->assertSame('1', $model->id);
+		$this->assertObjectHasAttribute('column_int', $model);
+		$this->assertSame('1', $model->column_int);
+		$this->assertObjectHasAttribute('column_string', $model);
+		$this->assertSame('blah', $model->column_string);
+		$this->assertObjectHasAttribute('OCDT', $model);
+		$this->assertSame(date('Y-m-d H:i:s'), $model->OCDT);
+		$this->assertObjectHasAttribute('OMDT', $model);
+		$this->assertSame(date('Y-m-d H:i:s'), $model->OMDT);
+		$this->assertObjectHasAttribute('OCU', $model);
+		$this->assertSame('0', $model->OCU);
+		$this->assertObjectHasAttribute('OMU', $model);
+		$this->assertSame('0', $model->OMU);
+	}
 }
