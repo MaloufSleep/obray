@@ -131,6 +131,7 @@ class ODBO extends OObject
 			)));
 		}
 	}
+
 	/**
 	 * @param bool $shouldUseReader
 	 */
@@ -369,56 +370,57 @@ class ODBO extends OObject
 
 		$this->getWorkingDef();
 
-		foreach ($params as $key => $param) {
-
-			if (isset($this->table_definition[$key])) {
-
-				$def = $this->table_definition[$key];
-				if (!empty($def["options"])) {
-					$options = array_change_key_case($def["options"], CASE_LOWER);
-					if (!empty($options[strtolower($param)]) && !is_array($options[strtolower($param)])) {
-						$data[$key] = $options[strtolower($param)];
-						$option_is_set = TRUE;
-					} else {
-						$data[$key] = $param;
-					}
-				} else {
-					$data[$key] = $param;
-				}
-				$data_type = $this->getDataType($def);
-
-				if (isset($def['required']) && $def['required'] === TRUE && (!isset($param) || $param === NULL || $param === '')) {
-					$this->throwError(($def['error_message'] ?? isset($def['label'])) ? $def['label'] . ' is required.' : $key . ' is required.', 500, $key);
-				}
-
-				if ((isset($def['data_type']) && !empty($this->data_types[$data_type['data_type']]['validation_regex']) && !preg_match($this->data_types[$data_type['data_type']]['validation_regex'], $param)) && $param == NULL) {
-					$this->throwError(($def['error_message'] ?? isset($def['label'])) ? $def['label'] . ' is invalid.' : $key . ' is invalid.', 500, $key);
-				}
-
-				if (isset($def['data_type']) && $def['data_type'] == 'password') {
-					$salt = '$2a$12$' . $this->generateToken();
-					$data[$key] = crypt($param, $salt);
-				}
-
-				if (!empty($sql)) {
-					$sql .= ',';
-					$sql_values .= ',';
-				}
-				$sql .= $key . ' = :' . $key . ' ';
-
-			}
-		}
-
 		if (empty($this->primary_key_column)) {
 			$this->throwError('Please specify a primary key.', 'primary_key', '500');
 		}
 		if (!isset($params[$this->primary_key_column])) {
 			$this->throwError('Please specify a value for the primary key.', '500', $this->primary_key_column);
 		}
+
+		foreach ($params as $key => $param) {
+			// Skip parameters not defined on the model, and skip the primary key (we don't change the primary key)
+			if (!isset($this->table_definition[$key]) || $key === $this->primary_key_column) {
+				continue;
+			}
+
+			$def = $this->table_definition[$key];
+			if (!empty($def["options"])) {
+				$options = array_change_key_case($def["options"], CASE_LOWER);
+				if (!empty($options[strtolower($param)]) && !is_array($options[strtolower($param)])) {
+					$data[$key] = $options[strtolower($param)];
+					$option_is_set = TRUE;
+				} else {
+					$data[$key] = $param;
+				}
+			} else {
+				$data[$key] = $param;
+			}
+			$data_type = $this->getDataType($def);
+
+			if (isset($def['required']) && $def['required'] === TRUE && (!isset($param) || $param === '')) {
+				$this->throwError(($def['error_message'] ?? isset($def['label'])) ? $def['label'] . ' is required.' : $key . ' is required.', 500, $key);
+			}
+
+			if ((isset($def['data_type']) && !empty($this->data_types[$data_type['data_type']]['validation_regex']) && !preg_match($this->data_types[$data_type['data_type']]['validation_regex'], $param)) && $param == NULL) {
+				$this->throwError(($def['error_message'] ?? isset($def['label'])) ? $def['label'] . ' is invalid.' : $key . ' is invalid.', 500, $key);
+			}
+
+			if (isset($def['data_type']) && $def['data_type'] == 'password') {
+				$salt = '$2a$12$' . $this->generateToken();
+				$data[$key] = crypt($param, $salt);
+			}
+
+			if (!empty($sql)) {
+				$sql .= ',';
+				$sql_values .= ',';
+			}
+			$sql .= $key . ' = :' . $key . ' ';
+
+		}
+
 		if ($this->isError()) {
 			return $this;
 		}
-
 
 		if ($this->enable_system_columns) {
 			if (isset($_SESSION['ouser']->ouser_id) && !empty($_SESSION['ouser']->ouser_id)) {
