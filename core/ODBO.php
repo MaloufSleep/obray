@@ -436,6 +436,7 @@ class ODBO extends OObject
 
 		$this->sql = ' UPDATE ' . $this->table . ' SET ' . $sql . $system_columns . ' WHERE ' . $this->primary_key_column . ' = :' . $this->primary_key_column . ' ';
 		$statement = $this->dbh->prepare($this->sql);
+		$statement->bindValue($this->primary_key_column, $params[$this->primary_key_column]);
 		foreach ($data as $key => $datum) {
 			if ($datum == 'NULL') {
 				$statement->bindValue($key, null, PDO::PARAM_NULL);
