@@ -318,12 +318,10 @@ class ODBO extends OObject
 
 		if (empty($this->primary_key_column)) {
 			$this->throwError('Please specify a primary key.', 'primary_key', '500');
-			return $this;
 		}
 
 		if (!isset($params[$this->primary_key_column])) {
 			$this->throwError('Please specify a value for the primary key.', '500', $this->primary_key_column);
-			return $this;
 		}
 
 		list($data, $option_is_set) = $this->buildDataBindings($params);
@@ -332,13 +330,12 @@ class ODBO extends OObject
 			return $this;
 		}
 
-		$updates = implode(',', array_map(function ($column) {
-			return $column . ' = :' . $column;
-		}, array_keys($data)));
+		$updates = implode(',', array_map(fn($column) => $column . ' = :' . $column, array_keys($data)));
 
 		$this->sql = ' UPDATE ' . $this->table . ' SET ' . $updates . ' WHERE ' . $this->primary_key_column . ' = :' . $this->primary_key_column . ' ';
 		$statement = $this->dbh->prepare($this->sql);
 
+		$statement->bindValue($this->primary_key_column, $params[$this->primary_key_column]);
 		foreach ($data as $column => $value) {
 			if ($value == 'NULL') {
 				$statement->bindValue($column, null, PDO::PARAM_NULL);
@@ -896,7 +893,7 @@ class ODBO extends OObject
 		$option_is_set = false;
 
 		foreach ($params as $key => $param) {
-			if (!array_key_exists($key, $this->table_definition)) {
+			if (!array_key_exists($key, $this->table_definition) || $this->primary_key_column === $key) {
 				continue;
 			}
 

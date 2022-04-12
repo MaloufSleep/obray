@@ -5,7 +5,7 @@ namespace tests\Odbo;
 use stdClass;
 
 /**
- * @covers ODBO::update
+ * @covers \ODBO::update
  */
 class UpdateTest extends OdboTestCase
 {
@@ -21,11 +21,11 @@ class UpdateTest extends OdboTestCase
 		$this->testModel->dbh = $this->pdo;
 	}
 
-	public function testAdd()
+	public function testUpdate()
 	{
 		$this->testModel->update([
 			'id' => $this->modelId,
-			'column_int' => 1,
+			'column_int' => 100,
 		]);
 
 		$this->assertNotError($this->testModel);
@@ -38,7 +38,7 @@ class UpdateTest extends OdboTestCase
 		$this->assertObjectHasAttribute('id', $model);
 		$this->assertSame($this->modelId, $model->id);
 		$this->assertObjectHasAttribute('column_int', $model);
-		$this->assertSame('1', $model->column_int);
+		$this->assertSame('100', $model->column_int);
 		$this->assertObjectHasAttribute('column_string', $model);
 		$this->assertSame('blah', $model->column_string);
 		$this->assertObjectHasAttribute('OCDT', $model);
@@ -51,7 +51,7 @@ class UpdateTest extends OdboTestCase
 		$this->assertSame('0', $model->OMU);
 	}
 
-	public function testAddNullAttribute()
+	public function testUpdateNullAttribute()
 	{
 		$this->testModel->update([
 			'id' => $this->modelId,
@@ -110,6 +110,5 @@ class UpdateTest extends OdboTestCase
 		$this->assertObjectHasAttribute('OCU', $model);
 		$this->assertSame('0', $model->OCU);
 		$this->assertObjectHasAttribute('OMU', $model);
-		$this->assertSame('0', $model->OMU);
-	}
+		$this->assertSame('0', $model->OMU);	}
 }
