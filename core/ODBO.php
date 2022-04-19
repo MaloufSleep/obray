@@ -318,8 +318,8 @@ class ODBO extends OObject
 
 		if ($this->enable_system_columns) {
 			$ocu = $_SESSION['ouser']->ouser_id ?? 0;
-			$system_columns = ", OCDT, OCU ";
-			$system_values = ', \'' . date('Y-m-d H:i:s') . '\', ' . $ocu;
+			$system_columns = (empty($sql) ? '' : ',') . " OCDT, OCU ";
+			$system_values = (empty($sql) ? '' : ',') . ' \'' . date('Y-m-d H:i:s') . '\', ' . $ocu;
 		} else {
 			$system_columns = "";
 			$system_values = "";
@@ -428,7 +428,7 @@ class ODBO extends OObject
 			} else {
 				$omu = 0;
 			}
-			$system_columns = ', OMDT = \'' . date('Y-m-d H:i:s') . '\', OMU = ' . $omu;
+			$system_columns = (empty($sql) ? '' : ',') .' OMDT = \'' . date('Y-m-d H:i:s') . '\', OMU = ' . $omu;
 
 		} else {
 			$system_columns = "";
