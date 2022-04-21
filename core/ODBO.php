@@ -267,8 +267,8 @@ class ODBO extends OObject
 			return $this;
 		}
 
-		$columnsToUpdate = implode(',', $columnNames = array_keys($data));
-		$bindingNames = implode(',', array_map(function ($column) {
+		$columnsToUpdate = implode(', ', $columnNames = array_keys($data));
+		$bindingNames = implode(', ', array_map(function ($column) {
 			return ':' . $column;
 		}, $columnNames));
 

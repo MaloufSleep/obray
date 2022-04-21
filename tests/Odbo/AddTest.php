@@ -89,7 +89,7 @@ class AddTest extends OdboTestCase
 		$this->assertObjectHasAttribute('id', $model);
 		$this->assertSame('1', $model->id);
 		$this->assertObjectHasAttribute('column_int', $model);
-		$this->assertNull($model->column_int);
+		$this->assertSame('0', $model->column_int);
 		$this->assertObjectHasAttribute('OCDT', $model);
 		$this->assertSame(date('Y-m-d H:i:s'), $model->OCDT);
 		$this->assertObjectHasAttribute('OMDT', $model);
@@ -172,7 +172,7 @@ class AddTest extends OdboTestCase
 		$this->assertObjectHasAttribute('id', $model);
 		$this->assertSame('1', $model->id);
 		$this->assertObjectHasAttribute('column_int', $model);
-		$this->assertNull($model->column_int);
+		$this->assertSame('0', $model->column_int);
 		$this->assertObjectNotHasAttribute('OCDT', $model);
 		$this->assertObjectNotHasAttribute('OMDT', $model);
 		$this->assertObjectNotHasAttribute('OCU', $model);
