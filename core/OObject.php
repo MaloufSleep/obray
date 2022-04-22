@@ -500,6 +500,7 @@ class OObject
 						$obj->path_to_object = implode('/', $path_array);
 						array_pop($rPath);
 						$obj->rPath = $rPath;
+						$obj->setOutput($this->output);
 
 						//	CHECK PERMISSIONS
 						$params = array_merge($obj->checkPermissions('object', $direct), $params);
