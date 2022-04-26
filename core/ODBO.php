@@ -241,16 +241,12 @@ class ODBO extends OObject
 	 *******************************************************************
 	 * @throws \Exception
 	 */
-
 	public function add($params = array())
 	{
 		if (empty($this->dbh)) {
 			return $this;
 		}
 
-		$sql = '';
-		$sql_values = '';
-		$data = array();
 		$this->data_types = unserialize(__OBRAY_DATATYPES__);
 
 		$this->getWorkingDef();
@@ -264,81 +260,35 @@ class ODBO extends OObject
 			$params[$this->slug_value_column] = $this->getSlug($params[$this->slug_key_column], $this->slug_value_column, $parent);
 		}
 
-		foreach ($params as $key => $param) {
-
-			if (isset($this->table_definition[$key])) {
-
-				$def = $this->table_definition[$key];
-				if (!empty($def["options"])) {
-					$options = array_change_key_case($def["options"], CASE_LOWER);
-					if (!empty($options[strtolower($param)]) && !is_array($options[strtolower($param)])) {
-						$data[$key] = $options[strtolower($param)];
-						$option_is_set = TRUE;
-					} else {
-						$data[$key] = $param;
-					}
-				} else {
-					$data[$key] = $param;
-				}
-				$data_type = $this->getDataType($def);
-
-				if (isset($this->required[$key])) {
-					unset($this->required[$key]);
-				}
-				if (isset($def['data_type']) && !empty($this->data_types[$data_type['data_type']]['validation_regex']) && !preg_match($this->data_types[$data_type['data_type']]['validation_regex'], $param) && $param == NULL) {
-					$this->throwError(($def['error_message'] ?? isset($def['label'])) ? $def['label'] . ' is invalid.' : $key . ' is invalid.', '500', $key);
-				}
-
-				if (isset($def['data_type']) && $def['data_type'] == 'password') {
-					$salt = '$2a$12$' . $this->generateToken();
-					$data[$key] = crypt($param, $salt);
-				}
-
-				if (isset($param)) {
-					if (!empty($sql)) {
-						$sql .= ',';
-						$sql_values .= ',';
-					}
-					$sql .= $key;
-					$sql_values .= ':' . $key;
-				}
-			}
-		}
-
-		if (!empty($this->required)) {
-			foreach ($this->required as $key => $value) {
-				$this->throwError($key . ' is required.', '500', $key);
-			}
-		}
+		list($data, $option_is_set) = $this->buildDataBindings($params);
 
 		if ($this->isError()) {
 			$this->throwError($this->general_error ?? 'There was an error on this form, please make sure the below fields were completed correctly: ');
 			return $this;
 		}
 
-		if ($this->enable_system_columns) {
-			$ocu = $_SESSION['ouser']->ouser_id ?? 0;
-			$system_columns = (empty($sql) ? '' : ',') . " OCDT, OCU ";
-			$system_values = (empty($sql) ? '' : ',') . ' \'' . date('Y-m-d H:i:s') . '\', ' . $ocu;
-		} else {
-			$system_columns = "";
-			$system_values = "";
-		}
+		$columnsToUpdate = implode(', ', $columnNames = array_keys($data));
+		$bindingNames = implode(', ', array_map(function ($column) {
+			return ':' . $column;
+		}, $columnNames));
 
-		$this->sql = ' INSERT INTO ' . $this->table . ' ( ' . $sql . $system_columns . ' ) values ( ' . $sql_values . $system_values . ' ) ';
+		$this->sql = 'INSERT INTO ' . $this->table . ' (' . $columnsToUpdate . ') VALUES (' . $bindingNames . ')';
 		$statement = $this->dbh->prepare($this->sql);
-		foreach ($data as $key => $dati) {
-			if ($dati === 'NULL') {
-				$statement->bindValue($key, null, PDO::PARAM_NULL);
+
+		foreach ($data as $column => $value) {
+			if ($value === 'NULL') {
+				$statement->bindValue($column, null, PDO::PARAM_NULL);
 			} else {
-				$statement->bindValue($key, $dati);
+				$statement->bindValue($column, $value);
 			}
 		}
+
 		try {
 			$this->script = $statement->execute();
 		} catch (Exception $e) {
 			$this->script = $this->handleDBError($e, $statement);
 		}
+
 		if (empty($this->is_transaction)) {
 			$get_params = array($this->primary_key_column => $this->dbh->lastInsertId());
 			if (!empty($option_is_set)) {
@@ -356,16 +306,12 @@ class ODBO extends OObject
 	 *******************************************************************
 	 * @throws \Exception
 	 */
-
 	public function update($params = array())
 	{
 		if (empty($this->dbh)) {
 			return $this;
 		}
 
-		$sql = '';
-		$sql_values = '';
-		$data = array();
 		$this->data_types = unserialize(__OBRAY_DATATYPES__);
 
 		$this->getWorkingDef();
@@ -373,77 +319,31 @@ class ODBO extends OObject
 		if (empty($this->primary_key_column)) {
 			$this->throwError('Please specify a primary key.', 'primary_key', '500');
 		}
+
 		if (!isset($params[$this->primary_key_column])) {
 			$this->throwError('Please specify a value for the primary key.', '500', $this->primary_key_column);
 		}
 
-		foreach ($params as $key => $param) {
-			// Skip parameters not defined on the model, and skip the primary key (we don't change the primary key)
-			if (!isset($this->table_definition[$key]) || $key === $this->primary_key_column) {
-				continue;
-			}
-
-			$def = $this->table_definition[$key];
-			if (!empty($def["options"])) {
-				$options = array_change_key_case($def["options"], CASE_LOWER);
-				if (!empty($options[strtolower($param)]) && !is_array($options[strtolower($param)])) {
-					$data[$key] = $options[strtolower($param)];
-					$option_is_set = TRUE;
-				} else {
-					$data[$key] = $param;
-				}
-			} else {
-				$data[$key] = $param;
-			}
-			$data_type = $this->getDataType($def);
-
-			if (isset($def['required']) && $def['required'] === TRUE && (!isset($param) || $param === '')) {
-				$this->throwError(($def['error_message'] ?? isset($def['label'])) ? $def['label'] . ' is required.' : $key . ' is required.', 500, $key);
-			}
-
-			if ((isset($def['data_type']) && !empty($this->data_types[$data_type['data_type']]['validation_regex']) && !preg_match($this->data_types[$data_type['data_type']]['validation_regex'], $param)) && $param == NULL) {
-				$this->throwError(($def['error_message'] ?? isset($def['label'])) ? $def['label'] . ' is invalid.' : $key . ' is invalid.', 500, $key);
-			}
-
-			if (isset($def['data_type']) && $def['data_type'] == 'password') {
-				$salt = '$2a$12$' . $this->generateToken();
-				$data[$key] = crypt($param, $salt);
-			}
-
-			if (!empty($sql)) {
-				$sql .= ',';
-				$sql_values .= ',';
-			}
-			$sql .= $key . ' = :' . $key . ' ';
-
-		}
+		list($data, $option_is_set) = $this->buildDataBindings($params);
 
 		if ($this->isError()) {
 			return $this;
 		}
 
-		if ($this->enable_system_columns) {
-			if (isset($_SESSION['ouser']->ouser_id) && !empty($_SESSION['ouser']->ouser_id)) {
-				$omu = $_SESSION['ouser']->ouser_id;
-			} else {
-				$omu = 0;
-			}
-			$system_columns = (empty($sql) ? '' : ',') .' OMDT = \'' . date('Y-m-d H:i:s') . '\', OMU = ' . $omu;
+		$updates = implode(',', array_map(fn($column) => $column . ' = :' . $column, array_keys($data)));
 
-		} else {
-			$system_columns = "";
-		}
-
-		$this->sql = ' UPDATE ' . $this->table . ' SET ' . $sql . $system_columns . ' WHERE ' . $this->primary_key_column . ' = :' . $this->primary_key_column . ' ';
+		$this->sql = ' UPDATE ' . $this->table . ' SET ' . $updates . ' WHERE ' . $this->primary_key_column . ' = :' . $this->primary_key_column . ' ';
 		$statement = $this->dbh->prepare($this->sql);
+
 		$statement->bindValue($this->primary_key_column, $params[$this->primary_key_column]);
-		foreach ($data as $key => $datum) {
-			if ($datum == 'NULL') {
-				$statement->bindValue($key, null, PDO::PARAM_NULL);
+		foreach ($data as $column => $value) {
+			if ($value == 'NULL') {
+				$statement->bindValue($column, null, PDO::PARAM_NULL);
 			} else {
-				$statement->bindValue($key, $datum);
+				$statement->bindValue($column, $value);
 			}
 		}
+
 		try {
 			$this->script = $statement->execute();
 		} catch (Exception $e) {
@@ -981,6 +881,56 @@ class ODBO extends OObject
 		usort($this->data, array($this, 'sortCallback'));
 
 		return $this;
+	}
+
+	/**
+	 * @param array $params
+	 * @return array
+	 */
+	protected function buildDataBindings(array $params): array
+	{
+		$data = [];
+		$option_is_set = false;
+
+		foreach ($params as $key => $param) {
+			if (!array_key_exists($key, $this->table_definition) || $this->primary_key_column === $key) {
+				continue;
+			}
+
+			$def = $this->table_definition[$key];
+			if (!empty($def["options"])) {
+				$options = array_change_key_case($def["options"], CASE_LOWER);
+				if (!empty($options[strtolower($param)]) && !is_array($options[strtolower($param)])) {
+					$data[$key] = $options[strtolower($param)];
+					$option_is_set = TRUE;
+				} else {
+					$data[$key] = $param;
+				}
+			} else {
+				$data[$key] = $param;
+			}
+			$data_type = $this->getDataType($def);
+
+			if ((isset($def['data_type']) && !empty($this->data_types[$data_type['data_type']]['validation_regex']) && !preg_match($this->data_types[$data_type['data_type']]['validation_regex'], $param)) && $param == NULL) {
+				$this->throwError(($def['error_message'] ?? isset($def['label'])) ? $def['label'] . ' is invalid.' : $key . ' is invalid.', 500, $key);
+			}
+
+			if (isset($def['data_type']) && $def['data_type'] == 'password') {
+				$salt = '$2a$12$' . $this->generateToken();
+				$data[$key] = crypt($param, $salt);
+			}
+
+			if (isset($def['required']) && $def['required'] === TRUE && (!isset($param) || $param === '')) {
+				$this->throwError(($def['error_message'] ?? $def['label'] ?? $key) . ' is required.', 500, $key);
+			}
+		}
+
+		if ($this->enable_system_columns) {
+			$data['OCU'] = $_SESSION['ouser']->ouser_id ?? 0;
+			$data['OCDT'] = date('Y-m-d H:i:s');
+		}
+
+		return array($data, $option_is_set);
 	}
 
 	/**

@@ -13,9 +13,16 @@ class TestModel extends ODBO
 		$this->table = "test_table";
 		$this->table_definition = [
 			'id' => ['primary_key' => TRUE],
-			'column_int' => ['data_type' => 'integer', 'options' => [
-				'String at index 0'
-			]],
+			'column_int' => [
+				'data_type' => 'integer',
+				'required' => true,
+				'options' => [
+					'String at index 0'
+				],
+			],
+			'column_string' => [
+				'data_type' => 'varchar',
+			],
 		];
 	}
 }

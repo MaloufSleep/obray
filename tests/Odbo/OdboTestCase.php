@@ -30,6 +30,7 @@ class OdboTestCase extends TestCase
 			[
 				PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8',
 				PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+				PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
 			]
 		);
 
@@ -42,7 +43,8 @@ class OdboTestCase extends TestCase
 		$this->pdo->exec('
 			create table `test_table` (
 			    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-			    `column_int` BIGINT UNSIGNED NULL,
+			    `column_int` BIGINT UNSIGNED NOT NULL,
+			    `column_string` varchar(191) NULL,
 			    `OCDT` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
 			    `OMDT` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
 			    `OCU` BIGINT UNSIGNED NOT NULL,

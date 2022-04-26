@@ -5,12 +5,10 @@ namespace tests\Odbo;
 use stdClass;
 
 /**
- * @covers \ODBO::update
+ * @covers ODBO::add
  */
 class AddTest extends OdboTestCase
 {
-	protected string $modelId = '1';
-
 	protected function setUp(): void
 	{
 		parent::setUp();
@@ -21,8 +19,7 @@ class AddTest extends OdboTestCase
 	public function testAdd()
 	{
 		$this->testModel->add([
-			'id' => $this->modelId,
-			'column_int' => 100,
+			'column_int' => 1,
 		]);
 
 		$this->assertNotError($this->testModel);
@@ -33,9 +30,39 @@ class AddTest extends OdboTestCase
 		$this->assertInstanceOf(stdClass::class, $model = $data[0]);
 
 		$this->assertObjectHasAttribute('id', $model);
-		$this->assertSame($this->modelId, $model->id);
+		$this->assertSame('1', $model->id);
 		$this->assertObjectHasAttribute('column_int', $model);
-		$this->assertSame('100', $model->column_int);
+		$this->assertSame('1', $model->column_int);
+		$this->assertObjectHasAttribute('OCDT', $model);
+		$this->assertSame(date('Y-m-d H:i:s'), $model->OCDT);
+		$this->assertObjectHasAttribute('OMDT', $model);
+		$this->assertSame(date('Y-m-d H:i:s'), $model->OMDT);
+		$this->assertObjectHasAttribute('OCU', $model);
+		$this->assertSame('0', $model->OCU);
+		$this->assertObjectHasAttribute('OMU', $model);
+		$this->assertSame('0', $model->OMU);
+	}
+
+	public function testAddNullAttribute()
+	{
+		$this->testModel->add([
+			'column_int' => 1,
+			'column_string' => null,
+		]);
+
+		$this->assertNotError($this->testModel);
+		$this->assertObjectHasAttribute('data', $this->testModel);
+		$this->assertIsArray($data = $this->testModel->data);
+		$this->assertCount(1, $data);
+		$this->assertArrayHasKey(0, $data);
+		$this->assertInstanceOf(stdClass::class, $model = $data[0]);
+
+		$this->assertObjectHasAttribute('id', $model);
+		$this->assertSame('1', $model->id);
+		$this->assertObjectHasAttribute('column_int', $model);
+		$this->assertSame('1', $model->column_int);
+		$this->assertObjectHasAttribute('column_string', $model);
+		$this->assertSame(null, $model->column_string);
 		$this->assertObjectHasAttribute('OCDT', $model);
 		$this->assertSame(date('Y-m-d H:i:s'), $model->OCDT);
 		$this->assertObjectHasAttribute('OMDT', $model);
@@ -49,7 +76,7 @@ class AddTest extends OdboTestCase
 	public function testInsertWithOnlyPrimaryKey()
 	{
 		$this->testModel->add([
-			'id' => $this->modelId,
+			'id' => 1,
 		]);
 
 		$this->assertNotError($this->testModel);
@@ -60,9 +87,9 @@ class AddTest extends OdboTestCase
 		$this->assertInstanceOf(stdClass::class, $model = $data[0]);
 
 		$this->assertObjectHasAttribute('id', $model);
-		$this->assertSame($this->modelId, $model->id);
+		$this->assertSame('1', $model->id);
 		$this->assertObjectHasAttribute('column_int', $model);
-		$this->assertNull($model->column_int);
+		$this->assertSame('0', $model->column_int);
 		$this->assertObjectHasAttribute('OCDT', $model);
 		$this->assertSame(date('Y-m-d H:i:s'), $model->OCDT);
 		$this->assertObjectHasAttribute('OMDT', $model);
@@ -72,11 +99,42 @@ class AddTest extends OdboTestCase
 		$this->assertObjectHasAttribute('OMU', $model);
 		$this->assertSame('0', $model->OMU);
 	}
+
+	public function testAddingColumnThatDoesNotExist()
+	{
+		$this->testModel->add([
+			'column_int' => 1,
+			'column_does_not_exist' => 1,
+		]);
+
+		$this->assertNotError($this->testModel);
+		$this->assertObjectHasAttribute('data', $this->testModel);
+		$this->assertIsArray($data = $this->testModel->data);
+		$this->assertCount(1, $data);
+		$this->assertArrayHasKey(0, $data);
+		$this->assertInstanceOf(stdClass::class, $model = $data[0]);
+
+		$this->assertObjectHasAttribute('id', $model);
+		$this->assertSame('1', $model->id);
+		$this->assertObjectHasAttribute('column_int', $model);
+		$this->assertSame('1', $model->column_int);
+		$this->assertObjectHasAttribute('column_string', $model);
+		$this->assertSame(null, $model->column_string);
+		$this->assertObjectHasAttribute('OCDT', $model);
+		$this->assertSame(date('Y-m-d H:i:s'), $model->OCDT);
+		$this->assertObjectHasAttribute('OMDT', $model);
+		$this->assertSame(date('Y-m-d H:i:s'), $model->OMDT);
+		$this->assertObjectHasAttribute('OCU', $model);
+		$this->assertSame('0', $model->OCU);
+		$this->assertObjectHasAttribute('OMU', $model);
+		$this->assertSame('0', $model->OMU);
+	}
+
 	public function testAddWithoutSystemColumns()
 	{
 		$this->testModel->enable_system_columns = false;
 		$this->testModel->add([
-			'id' => $this->modelId,
+			'id' => 1,
 			'column_int' => 100,
 		]);
 
@@ -88,7 +146,7 @@ class AddTest extends OdboTestCase
 		$this->assertInstanceOf(stdClass::class, $model = $data[0]);
 
 		$this->assertObjectHasAttribute('id', $model);
-		$this->assertSame($this->modelId, $model->id);
+		$this->assertSame('1', $model->id);
 		$this->assertObjectHasAttribute('column_int', $model);
 		$this->assertSame('100', $model->column_int);
 		$this->assertObjectNotHasAttribute('OCDT', $model);
@@ -101,7 +159,7 @@ class AddTest extends OdboTestCase
 	{
 		$this->testModel->enable_system_columns = false;
 		$this->testModel->add([
-			'id' => $this->modelId,
+			'id' => 1,
 		]);
 
 		$this->assertNotError($this->testModel);
@@ -112,9 +170,9 @@ class AddTest extends OdboTestCase
 		$this->assertInstanceOf(stdClass::class, $model = $data[0]);
 
 		$this->assertObjectHasAttribute('id', $model);
-		$this->assertSame($this->modelId, $model->id);
+		$this->assertSame('1', $model->id);
 		$this->assertObjectHasAttribute('column_int', $model);
-		$this->assertNull($model->column_int);
+		$this->assertSame('0', $model->column_int);
 		$this->assertObjectNotHasAttribute('OCDT', $model);
 		$this->assertObjectNotHasAttribute('OMDT', $model);
 		$this->assertObjectNotHasAttribute('OCU', $model);
