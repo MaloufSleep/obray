@@ -121,7 +121,7 @@ class ORouter extends OObject
 		}
 
 		// check if `JSON_NUMERIC_CHECK` should be used for this route
-		$jsonNumericCheck = $obj->jsonNumericCheck ?? true;
+		$jsonNumericCheck = (isset($obj->jsonNumericCheck) && is_bool($obj->jsonNumericCheck)) ? $obj->jsonNumericCheck : true;
 
 		/*****************************************************************************************
 		 *
