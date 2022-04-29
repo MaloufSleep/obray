@@ -143,7 +143,7 @@ class ORouter extends OObject
                     $encodingFlags |= JSON_NUMERIC_CHECK;
                 }
 
-				$json = json_encode($obj, JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK);
+				$json = json_encode($obj, $encodingFlags);
 				if ($json === FALSE) {
 					$json = json_encode($obj, JSON_PRETTY_PRINT);
 				}
