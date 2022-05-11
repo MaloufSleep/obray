@@ -36,6 +36,7 @@ class oLog extends OObject
 
 	public function logError($oProjectEnum, Exception $exception, $customMessage = "")
 	{
+		$this->lastException = $exception;
 		if (isset(self::$exceptionHandler)) {
 			if (self::$exceptionHandler->shouldReport($exception)) {
 				self::$exceptionHandler->report($exception);
