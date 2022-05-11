@@ -47,5 +47,7 @@ class ExceptionHandlerTest extends TestCase
 		$this->assertCount(1, $reported);
 		$this->assertArrayhasKey(0, $reported);
 		$this->assertSame($exception, $reported[0]);
+
+		$this->assertSame($exception, $this->logger->getLastException());
 	}
 }

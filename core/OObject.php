@@ -32,6 +32,7 @@ class OObject
 
 	// public data members
 	public $object = ''; // stores the name of the class
+	protected Throwable $lastException;
 
 	public function console(...$args)
 	{
@@ -1003,6 +1004,7 @@ class OObject
 
 	public function logError($oProjectEnum, Exception $exception, $customMessage = "")
 	{
+		$this->lastException = $exception;
 		$logger = new oLog();
 		$logger->logError($oProjectEnum, $exception, $customMessage);
 	}
@@ -1023,5 +1025,10 @@ class OObject
 	{
 		$namespaceRoot = explode('/', realpath(__OBRAY_NAMESPACE_ROOT__));
 		return array_pop($namespaceRoot);
+	}
+
+	public function getLastException(): Throwable
+	{
+		return $this->lastException;
 	}
 }
