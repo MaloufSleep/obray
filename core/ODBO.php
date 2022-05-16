@@ -422,8 +422,11 @@ class ODBO extends OObject
 		$limit = '';
 		$order_by = '';
 		$filter = TRUE;
-		if (isset($params['start']) && isset($params['rows'])) {
-			$limit = ' LIMIT ' . $params['start'] . ',' . $params['rows'] . '';
+		if (isset($params['start'], $params['rows'])) {
+			$params['start'] = (int)$params['start'];
+			$params['rows'] = (int)$params['rows'];
+
+			$limit = ' LIMIT ' . $params['start'] . ',' . $params['rows'];
 			unset($params['start']);
 			unset($params['rows']);
 			unset($original_params['start']);
