@@ -262,6 +262,11 @@ class ODBO extends OObject
 
 		list($data, $option_is_set) = $this->buildDataBindings($params);
 
+		if ($this->enable_system_columns) {
+			$data['OCU'] = $_SESSION['ouser']->ouser_id ?? 0;
+			$data['OCDT'] = date('Y-m-d H:i:s');
+		}
+
 		if ($this->isError()) {
 			$this->throwError($this->general_error ?? 'There was an error on this form, please make sure the below fields were completed correctly: ');
 			return $this;
@@ -325,6 +330,11 @@ class ODBO extends OObject
 		}
 
 		list($data, $option_is_set) = $this->buildDataBindings($params);
+
+		if ($this->enable_system_columns) {
+			$data['OMU'] = $_SESSION['ouser']->ouser_id ?? 0;
+			$data['OMDT'] = date('Y-m-d H:i:s');
+		}
 
 		if ($this->isError()) {
 			return $this;
@@ -926,11 +936,6 @@ class ODBO extends OObject
 			if (isset($def['required']) && $def['required'] === TRUE && (!isset($param) || $param === '')) {
 				$this->throwError(($def['error_message'] ?? $def['label'] ?? $key) . ' is required.', 500, $key);
 			}
-		}
-
-		if ($this->enable_system_columns) {
-			$data['OCU'] = $_SESSION['ouser']->ouser_id ?? 0;
-			$data['OCDT'] = date('Y-m-d H:i:s');
 		}
 
 		return array($data, $option_is_set);

@@ -139,4 +139,33 @@ class UpdateTest extends OdboTestCase
 		$this->assertObjectHasAttribute('OMU', $model);
 		$this->assertSame('0', $model->OMU);
 	}
+
+	public function testUpdateDoesNotChangeCreator()
+	{
+		$_SESSION['ouser']->ouser_id = 1;
+
+		$this->testModel->update([
+			'id' => $this->modelId,
+		]);
+
+		$this->assertNotError($this->testModel);
+		$this->assertObjectHasAttribute('data', $this->testModel);
+		$this->assertIsArray($data = $this->testModel->data);
+		$this->assertCount(1, $data);
+		$this->assertArrayHasKey(0, $data);
+		$this->assertInstanceOf(stdClass::class, $model = $data[0]);
+
+		$this->assertObjectHasAttribute('id', $model);
+		$this->assertSame($this->modelId, $model->id);
+		$this->assertObjectHasAttribute('column_int', $model);
+		$this->assertSame('1', $model->column_int);
+		$this->assertObjectHasAttribute('OCDT', $model);
+		$this->assertSame(date('Y-m-d H:i:s'), $model->OCDT);
+		$this->assertObjectHasAttribute('OMDT', $model);
+		$this->assertSame(date('Y-m-d H:i:s'), $model->OMDT);
+		$this->assertObjectHasAttribute('OCU', $model);
+		$this->assertSame('0', $model->OCU);
+		$this->assertObjectHasAttribute('OMU', $model);
+		$this->assertSame('1', $model->OMU);
+	}
 }
