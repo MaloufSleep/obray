@@ -3,10 +3,13 @@
 namespace tests;
 
 use OObject;
+use OUsers;
 use Symfony\Component\Console\Output\NullOutput;
 
 class TestCase extends \PHPUnit\Framework\TestCase
 {
+	use FakesAuthentication;
+
 	/**
 	 * @var \OObject
 	 */
@@ -16,9 +19,10 @@ class TestCase extends \PHPUnit\Framework\TestCase
 	{
 		parent::setUp();
 
-		$_SESSION['ouser'] = new class {
-			public $ouser_permission_level = 1;
-		};
+		global $_SESSION;
+		$_SESSION = [];
+		unset($_SERVER['PHP_AUTH_USER']);
+		unset($_SERVER['PHP_AUTH_PW']);
 
 		$this->router = new OObject();
 		$this->router->setOutput(new NullOutput());
@@ -41,6 +45,16 @@ class TestCase extends \PHPUnit\Framework\TestCase
 		define('__LOGS__', realpath(__DIR__ . '/../logs') . '/');
 	}
 
+	protected function tearDown(): void
+	{
+		if (class_exists(OUsers::class)) {
+			OUsers::$shouldAuthenticate = true;
+		}
+
+		parent::tearDown();
+	}
+
+
 	protected function assertNotError(?OObject $object = null)
 	{
 		$object = $object ?? $this->router;
@@ -50,12 +64,19 @@ class TestCase extends \PHPUnit\Framework\TestCase
 		$this->assertFalse($object->isError(), $errors);
 	}
 
-	protected function assertError(?OObject $object = null)
+	protected function assertError(?OObject $object = null, array $errors = [])
 	{
 		$object = $object ?? $this->router;
 
-		$errors = json_encode($object->errors ?? []);
+		$this->assertTrue($object->isError(), empty($object->errors) ? 'No error reported' : json_encode($object->errors));
 
-		$this->assertTrue($object->isError(), $errors);
+		if (!empty($errors)) {
+			$this->assertEqualsCanonicalizing($errors, $object->errors ?? []);
+		}
+	}
+
+	protected function route(string $path, array $params = [], bool $direct = false)
+	{
+		return $this->router->route($path, $params, $direct);
 	}
 }

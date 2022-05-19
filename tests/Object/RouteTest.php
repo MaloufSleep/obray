@@ -31,6 +31,7 @@ class RouteTest extends TestCase
 		$response = $this->router->route('app/TestController/test', [], false);
 
 		$this->assertNotError();
+		$this->assertNotError($response);
 		$this->assertInstanceOf(OObject::class, $response);
 		$this->assertNotSame($this->router, $response);
 		$this->assertNotNull($response->data);

@@ -40,8 +40,8 @@ class cTestController extends OObject
 	public function getPermissions()
 	{
 		return [
-			'object' => 1,
-			'test' => 1,
+			'object' => 'any',
+			'test' => 'any',
 			'throwException' => 1,
 			'index' => 1,
 		];
