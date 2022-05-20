@@ -1011,22 +1011,13 @@ class OObject
 	 */
 	protected function checkPermissionOrRole($allowedList, array $list): bool
 	{
-		if (!is_array($allowedList)) {
-			return false;
-		} else {
+		if (is_array($allowedList)) {
 			foreach ($allowedList as $allowedPermission) {
-				if (!is_string($allowedPermission)) {
-					return false;
+				if (in_array($allowedPermission, $list, true)) {
+					return true;
 				}
 			}
-
-			$matched = array_intersect($allowedList, $list);
-
-			if (count($matched) === 0) {
-				return false;
-			}
 		}
-
-		return true;
+		return false;
 	}
 }
