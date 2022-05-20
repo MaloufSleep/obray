@@ -504,7 +504,7 @@ class OObject
 						$obj->setOutput($this->output);
 
 						//	CHECK PERMISSIONS
-						$params = array_merge($obj->checkPermissions('object', $direct), $params);
+						$obj->checkPermissions('object', $direct);
 
 						//	SETUP DATABASE CONNECTION
 						if (method_exists($obj, 'setDatabaseConnection')) {
@@ -571,7 +571,7 @@ class OObject
 
 		if (method_exists($this, $path)) {
 			try {
-				$params = array_merge($this->checkPermissions($path, $direct), $params);
+				$this->checkPermissions($path, $direct);
 				if (!$this->isError()) {
 					$this->$path($params);
 				}
@@ -583,7 +583,7 @@ class OObject
 			return $this;
 		} else if (method_exists($this, "index")) {
 			try {
-				$params = array_merge($this->checkPermissions("index", $direct), $params);
+				$this->checkPermissions("index", $direct);
 				if (!$this->isError()) {
 					$this->index($params);
 				}
@@ -601,111 +601,83 @@ class OObject
 	/***********************************************************************
 	 * CHECK PERMISSIONS
 	 ***********************************************************************/
-	private function checkPermissions($object_name, $direct)
+	private function checkPermissions($object_name, $direct): void
 	{
-		$params = array();
+		// Only restrict permissions if the call is come from and HTTP request through router $direct === FALSE
+		if ($direct) {
+			return;
+		}
 
-		// only restrict permissions if the call is come from and HTTP request through router $direct === FALSE
-		if (!$direct) {
+		$perms = $this->getPermissions();
 
-			// retrieve permissions
-			$perms = $this->getPermissions();
+		// If specific action has no permissions defined, attempt to authorize on the generic "method" permission
+		if (!isset($perms[$object_name]) && isset($perms['method'])) {
+			$object_name = 'method';
+		}
 
-			// set the "method" permission is set and the specific method has no permis then set the object_name to "method"
-			if (!isset($perms[$object_name]) && isset($perms['method'])) {
-				$object_name = 'method';
-			}
+		//This is to add greater flexibility for using custom session variable for storage of user data
+		$user_session_key = isset($this->user_session) ? $this->user_session : 'ouser';
 
-			//This is to add greater flexibility for using custom session variable for storage of user data
-			$user_session_key = isset($this->user_session) ? $this->user_session : 'ouser';
-
-			// restrict permissions on undefined keys
-			if (!isset($perms[$object_name])) {
-
+		switch (true) {
+			case !isset($perms[$object_name]):
 				$this->throwError('You cannot access this resource.', 403, 'Forbidden');
+				break;
+			case $perms[$object_name] === 'any':
+				break;
+			case $perms[$object_name] === 'user':
+				if (!isset($_SESSION[$user_session_key]) && isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
+					$this->route('/obray/OUsers/login/', array('ouser_email' => $_SERVER['PHP_AUTH_USER'], 'ouser_password' => $_SERVER['PHP_AUTH_PW']), TRUE);
+				}
 
-				// restrict access to users that are not logged in if that's required
-			} else if (($perms[$object_name] === 'user' && !isset($_SESSION[$user_session_key])) || (is_int($perms[$object_name]) && !isset($_SESSION[$user_session_key]))) {
-
-				if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) {
-					$login = $this->route('/obray/OUsers/login/', array('ouser_email' => $_SERVER['PHP_AUTH_USER'], 'ouser_password' => $_SERVER['PHP_AUTH_PW']), TRUE);
-					if (!isset($_SESSION[$user_session_key])) {
+				if (!isset($_SESSION[$user_session_key])) {
+					$this->throwError('You cannot access this resource.', 401, 'Unauthorized');
+				}
+				break;
+			case !isset($_SESSION[$user_session_key]): // Everything past this point requires an authenticated user
+				$this->throwError('You cannot access this resource.', 401, 'Unauthorized');
+				break;
+			case is_int($perms[$object_name]):
+				if (!isset($_SESSION[$user_session_key]->ouser_permission_level)) {
+					$this->throwError('You cannot access this resource.', 401, 'Unauthorized');
+				} elseif (defined("__OBRAY_GRADUATED_PERMISSIONS__")) {
+					if ($_SESSION[$user_session_key]->ouser_permission_level < $perms[$object_name]) {
 						$this->throwError('You cannot access this resource.', 401, 'Unauthorized');
 					}
 				} else {
-					$this->throwError('You cannot access this resource.', 401, 'Unauthorized');
+					if ($_SESSION[$user_session_key]->ouser_permission_level != $perms[$object_name]) {
+						$this->throwError('You cannot access this resource.', 401, 'Unauthorized');
+					}
+				}
+				break;
+			case is_array($perms[$object_name]):
+				$userPermissions = $_SESSION[$user_session_key]->permissions ?? [];
+				$userRoles = $_SESSION[$user_session_key]->roles ?? [];
+
+				if (array_key_exists('permissions', $perms[$object_name])) {
+					$allowedPermissions = $perms[$object_name]['permissions'];
+
+					if ($this->checkPermissionOrRole($allowedPermissions, $userPermissions)) {
+						break;
+					}
 				}
 
-				// restrict access to users without correct permissions (non-graduated)
-			} else if (is_int($perms[$object_name])
-				&& isset($_SESSION[$user_session_key])
-				&& (
-					isset($_SESSION[$user_session_key]->ouser_permission_level)
-					&& !defined("__OBRAY_GRADUATED_PERMISSIONS__")
-					&& $_SESSION[$user_session_key]->ouser_permission_level != $perms[$object_name]
-				)
-			) {
+				if (array_key_exists('roles', $perms[$object_name])) {
+					$allowedRoles = $perms[$object_name]['roles'];
 
-				$this->throwError('You cannot access this resource.', 403, 'Forbidden');
-
-				// restrict access to users without correct permissions (graduated)
-			} else if (is_int($perms[$object_name])
-				&& isset($_SESSION[$user_session_key])
-				&&
-				(
-					isset($_SESSION[$user_session_key]->ouser_permission_level)
-					&& defined("__OBRAY_GRADUATED_PERMISSIONS__")
-					&& $_SESSION[$user_session_key]->ouser_permission_level > $perms[$object_name]
-				)
-			) {
-
-				$this->throwError('You cannot access this resource.', 403, 'Forbidden');
-
-				// roles & permissions checks
-			} else if (
-				(
-					is_array($perms[$object_name]) &&
-					isset($perms[$object_name]['permissions']) &&
-					is_array($perms[$object_name]['permissions']) &&
-					count(array_intersect($perms[$object_name]['permissions'], $_SESSION[$user_session_key]->permissions)) == 0
-				) || (
-					is_array($perms[$object_name]) &&
-					isset($perms[$object_name]['roles']) &&
-					is_array($perms[$object_name]['roles']) &&
-					count(array_intersect($perms[$object_name]['roles'], $_SESSION[$user_session_key]->roles)) == 0
-				) || (
-					is_array($perms[$object_name]) &&
-					isset($perms[$object_name]['roles']) &&
-					is_array($perms[$object_name]['roles']) &&
-					in_array("SUPER", $_SESSION[$user_session_key]->roles)
-				) || (
-					is_array($perms[$object_name]) &&
-					isset($perms[$object_name]['permissions']) &&
-					!is_array($perms[$object_name]['permissions'])
-				) || (
-					is_array($perms[$object_name]) &&
-					isset($perms[$object_name]['roles']) &&
-					!is_array($perms[$object_name]['roles'])
-				) || (
-					is_array($perms[$object_name]) &&
-					!isset($perms[$object_name]['roles']) &&
-					!isset($perms[$object_name]['permissions'])
-				)
-			) {
-
-				$this->throwError('You cannot access this resource.', 403, 'Forbidden');
-
-				// add user_id to params if restriction is based on user
-			} else {
-
-				if (isset($perms[$object_name]) && $perms[$object_name] === 'user' && isset($_SESSION[$user_session_key])) {
-					$params['ouser_id'] = $_SESSION['ouser']->ouser_id;
+					if ($this->checkPermissionOrRole($allowedRoles, $userRoles)) {
+						break;
+					}
 				}
 
-			}
+				if (is_array($userRoles) && in_array("SUPER", $userRoles)) {
+					break;
+				}
+
+				$this->throwError('You cannot access this resource.', 403, 'Forbidden');
+				break;
+			default:
+				$this->throwError('You cannot access this resource.', 403, 'Forbidden');
 		}
-
-		return $params;
 	}
 
 	/***********************************************************************
@@ -1030,5 +1002,22 @@ class OObject
 	public function getLastException(): Throwable
 	{
 		return $this->lastException;
+	}
+
+	/**
+	 * @param $allowedList
+	 * @param array $list
+	 * @return void
+	 */
+	protected function checkPermissionOrRole($allowedList, array $list): bool
+	{
+		if (is_array($allowedList)) {
+			foreach ($allowedList as $allowedPermission) {
+				if (in_array($allowedPermission, $list, true)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
