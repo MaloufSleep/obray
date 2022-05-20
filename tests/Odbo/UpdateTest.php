@@ -142,7 +142,7 @@ class UpdateTest extends OdboTestCase
 
 	public function testUpdateDoesNotChangeCreator()
 	{
-		$_SESSION['ouser']->ouser_id = 1;
+		$this->authenticate();
 
 		$this->testModel->update([
 			'id' => $this->modelId,

@@ -3,6 +3,7 @@
 namespace tests\Object;
 
 use App\controllers\cPermissionController;
+use App\controllers\RouteNotFoundHandler;
 use OUsers;
 use tests\TestCase;
 
@@ -299,5 +300,17 @@ class PermissionsTest extends TestCase
 
 		$this->assertError($response);
 		$this->assertInstanceOf(cPermissionController::class, $response);
+	}
+
+	public function testMissingRouteNoAuth()
+	{
+		$this->router->setMissingPathHandler(RouteNotFoundHandler::class, __DIR__ . '/../../test_files/app/controllers/RouteNotFoundHandler.php');
+		$response = $this->route('ControllerNotFound');
+
+		$this->assertNotError($response);
+		$this->assertInstanceOf(RouteNotFoundHandler::class, $response);
+
+		$this->assertObjectHasAttribute('data', $response);
+		$this->assertSame('Success', $response->data);
 	}
 }

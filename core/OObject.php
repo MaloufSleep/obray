@@ -777,18 +777,23 @@ class OObject
 		if (isset($this->missing_path_handler)) {
 			include $this->missing_path_handler_path;
 
+			/** @var \OObject $obj */
 			$obj = new $this->missing_path_handler();
 			$obj->setObject($this->missing_path_handler);
 
 			$obj->setContentType($obj->content_type);
 
-			//	CHECK PERMISSIONS
-			$params = array_merge($obj->checkPermissions('object', FALSE), $params);
-
 			//	SETUP DATABSE CONNECTION
 			if (method_exists($obj, 'setDatabaseConnection')) {
 				$obj->setDatabaseConnection(getDatabaseConnection());
 				$obj->setReaderDatabaseConnection(getReaderDatabaseConnection());
+			}
+
+			//	CHECK PERMISSIONS
+			$obj->checkPermissions('object', false);
+
+			if ($obj->isError()) {
+				return $obj;
 			}
 
 			//	ROUTE REMAINING PATH - function calls
