@@ -43,6 +43,8 @@ class TestCase extends \PHPUnit\Framework\TestCase
 		define('__OBRAY_DATABASE_PASSWORD__', 'root');
 
 		define('__LOGS__', realpath(__DIR__ . '/../logs') . '/');
+
+        OObject::$handleExceptions = true;
 	}
 
 	protected function tearDown(): void
