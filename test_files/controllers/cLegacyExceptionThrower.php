@@ -7,11 +7,17 @@ class cLegacyExceptionThrower extends OObject
         $this->permissions = [
             'object' => 'any',
             'throw' => 'any',
+            'nestToThrow' => 'any',
         ];
     }
 
     public function throw()
     {
         throw new Exception();
+    }
+
+    public function nestToThrow()
+    {
+        $this->route('LegacyExceptionThrower/throw');
     }
 }

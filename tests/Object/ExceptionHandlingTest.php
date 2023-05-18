@@ -3,17 +3,32 @@
 namespace tests\Object;
 
 use Exception;
+use OObject;
 use tests\TestCase;
 
 class ExceptionHandlingTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        OObject::$handleExceptions = false;
+    }
+
     /**
      * @covers OObject
      */
     public function testExceptionCanBeThrown()
     {
-        \OObject::$handleExceptions = false;
         $this->expectException(Exception::class);
-        $response = $this->route('LegacyExceptionThrower/throw');
+        $this->route('LegacyExceptionThrower/throw');
+    }
+
+    /**
+     * @covers OObject
+     */
+    public function testNestedExceptionCanBeThrown()
+    {
+        $this->expectException(Exception::class);
+        $this->route('LegacyExceptionThrower/nestToThrow');
     }
 }
