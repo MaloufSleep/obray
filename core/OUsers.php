@@ -206,8 +206,8 @@ class oUsers extends ODBO
 			);
 
 		} catch (Exception $e) {
-			//$this->throwError($e);
-			//$this->logError(oCoreProjectEnum::ODBO, $e);
+			$this->throwError($e);
+			$this->logError(oCoreProjectEnum::ODBO, $e);
 		}
 	}
 

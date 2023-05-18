@@ -71,7 +71,7 @@ class oWebSocketClient extends ODBO
 			} catch (Exception $err) {
 				$this->console("Unable to create stream context: " . $err->getMessage() . "\n");
 				$this->throwError("Unable to create stream context: " . $err->getMessage());
-				return;
+                $this->logError(static::class, $e);
 			}
 
 		}
@@ -79,7 +79,7 @@ class oWebSocketClient extends ODBO
 		//	4.	establish connection or abort on error
 		$listenstr = $protocol . "://" . $this->host . ":" . $this->port;
 		$this->console("Binding to " . $this->host . ":" . $this->port . " over " . $protocol . "\n");
-		$this->socket = @stream_socket_client($listenstr, $errno, $errstr, 5, STREAM_CLIENT_CONNECT, $context);
+		$this->socket = stream_socket_client($listenstr, $errno, $errstr, 5, STREAM_CLIENT_CONNECT, $context);
 
 		if (!is_resource($this->socket)) {
 			$this->console("%s", $errstr . "\n", "RedBold");

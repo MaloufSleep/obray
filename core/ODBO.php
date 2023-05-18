@@ -263,8 +263,8 @@ class ODBO extends OObject
 		list($data, $option_is_set) = $this->buildDataBindings($params);
 
 		if ($this->enable_system_columns) {
-			$data['OCU'] = $_SESSION['ouser']->ouser_id ?? 0;
-			$data['OCDT'] = date('Y-m-d H:i:s');
+			$data['OCU'] = $data['OMU'] = $_SESSION['ouser']->ouser_id ?? 0;
+			$data['OCDT'] = $data['OMDT'] = date('Y-m-d H:i:s');
 		}
 
 		if ($this->isError()) {

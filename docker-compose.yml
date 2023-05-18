@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  php:
+    build: .
+    environment:
+      XDEBUG_CONFIG: client_host=docker.host.internal
+      PHP_IDE_CONFIG: serverName=obray
+    init: true
+    command: tail -f /dev/null
+    volumes:
+      - .:/src
+    working_dir: /src
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: obray
+      tmpfs: /var/lib/mysql
+
+  docker.host.internal:
+    profiles:
+      - phpstorm
+    image: qoomon/docker-host
+    cap_add: [ 'NET_ADMIN', 'NET_RAW' ]
