@@ -7,6 +7,7 @@ use Exception;
 use OObject;
 use App\controllers\cTestController;
 use App\controllers\Nested\cNestedController;
+use tests\ResetsDatabase;
 use tests\TestCase;
 use tests\TestContainer;
 
@@ -15,6 +16,8 @@ use tests\TestContainer;
  */
 class CreateObjectTest extends TestCase
 {
+    use ResetsDatabase;
+
 	public function test404()
 	{
 		$response = $this->router->route('app/DoesNotExist');
@@ -70,6 +73,7 @@ class CreateObjectTest extends TestCase
 
 	public function testCreatingViaContainer()
 	{
+        $this->initializeResetsDatabase();
 		$this->router::setContainerSingleton(new TestContainer());
 		$this->router::getContainerSingleton()->bind(oTestModel::class, function () {
 			return new oTestModel;

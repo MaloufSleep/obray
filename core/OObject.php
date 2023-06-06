@@ -20,6 +20,8 @@ class OObject
 	private $missing_path_handler;                                                                // if path is not found by router we can pass it to this handler for another attempt
 	private $missing_path_handler_path;                                                            // the path of the missing handler
 	private $access;
+    public static $handleExceptions = true;
+
 	/**
 	 * @var \Illuminate\Contracts\Container\Container
 	 */
@@ -953,13 +955,8 @@ class OObject
 	{
 		global $conn;
 
-		try {
-			$conn = new PDO('mysql:host=' . __OBRAY_DATABASE_HOST__ . ';dbname=' . $db . ';charset=utf8', $uname, $psswd, array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
-			$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		} catch (PDOException $e) {
-			echo 'ERROR: ' . $e->getMessage();
-			exit();
-		}
+		$conn = new PDO('mysql:host=' . __OBRAY_DATABASE_HOST__ . ';dbname=' . $db . ';charset=utf8', $uname, $psswd, array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
+		$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 		return $conn;
 	}
@@ -981,6 +978,9 @@ class OObject
 
 	public function logError($oProjectEnum, Exception $exception, $customMessage = "")
 	{
+        if (!static::$handleExceptions) {
+            throw $exception;
+        }
 		$this->lastException = $exception;
 		$logger = new oLog();
 		$logger->logError($oProjectEnum, $exception, $customMessage);

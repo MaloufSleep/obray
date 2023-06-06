@@ -39,10 +39,12 @@ class TestCase extends \PHPUnit\Framework\TestCase
 		define('__APP__', 'Obray');
 		define('__OBRAY_DATABASE_HOST__', 'mysql');
 		define('__OBRAY_DATABASE_NAME__', 'obray');
-		define('__OBRAY_DATABASE_USERNAME__', 'obray');
-		define('__OBRAY_DATABASE_PASSWORD__', 'obray');
+		define('__OBRAY_DATABASE_USERNAME__', 'root');
+		define('__OBRAY_DATABASE_PASSWORD__', 'root');
 
 		define('__LOGS__', realpath(__DIR__ . '/../logs') . '/');
+
+        OObject::$handleExceptions = true;
 	}
 
 	protected function tearDown(): void

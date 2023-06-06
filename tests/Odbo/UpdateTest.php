@@ -15,7 +15,7 @@ class UpdateTest extends OdboTestCase
 	{
 		parent::setUp();
 
-		$this->pdo->query('INSERT INTO ' . $this->testModel->table . ' (column_int, column_string) VALUES (1, \'blah\')');
+		$this->pdo->query("INSERT INTO {$this->testModel->table} (column_int, column_string) VALUES (1, 'blah')");
 		$this->modelId = $this->pdo->lastInsertId();
 
 		$this->testModel->dbh = $this->pdo;
@@ -46,9 +46,9 @@ class UpdateTest extends OdboTestCase
 		$this->assertObjectHasAttribute('OMDT', $model);
 		$this->assertSame(date('Y-m-d H:i:s'), $model->OMDT);
 		$this->assertObjectHasAttribute('OCU', $model);
-		$this->assertSame('0', $model->OCU);
+		$this->assertNull($model->OCU);
 		$this->assertObjectHasAttribute('OMU', $model);
-		$this->assertSame('0', $model->OMU);
+		$this->assertNull($model->OMU);
 	}
 
 	public function testUpdateNullAttribute()
@@ -77,9 +77,9 @@ class UpdateTest extends OdboTestCase
 		$this->assertObjectHasAttribute('OMDT', $model);
 		$this->assertSame(date('Y-m-d H:i:s'), $model->OMDT);
 		$this->assertObjectHasAttribute('OCU', $model);
-		$this->assertSame('0', $model->OCU);
+		$this->assertNull($model->OCU);
 		$this->assertObjectHasAttribute('OMU', $model);
-		$this->assertSame('0', $model->OMU);
+		$this->assertNull($model->OMU);
 	}
 
 	public function testUpdateColumnThatDoesNotExist()
@@ -108,9 +108,9 @@ class UpdateTest extends OdboTestCase
 		$this->assertObjectHasAttribute('OMDT', $model);
 		$this->assertSame(date('Y-m-d H:i:s'), $model->OMDT);
 		$this->assertObjectHasAttribute('OCU', $model);
-		$this->assertSame('0', $model->OCU);
+		$this->assertNull($model->OCU);
 		$this->assertObjectHasAttribute('OMU', $model);
-		$this->assertSame('0', $model->OMU);
+		$this->assertNull($model->OMU);
 	}
 
 	public function testUpdateWithOnlyPrimaryKey()
@@ -135,9 +135,9 @@ class UpdateTest extends OdboTestCase
 		$this->assertObjectHasAttribute('OMDT', $model);
 		$this->assertSame(date('Y-m-d H:i:s'), $model->OMDT);
 		$this->assertObjectHasAttribute('OCU', $model);
-		$this->assertSame('0', $model->OCU);
+		$this->assertNull($model->OCU);
 		$this->assertObjectHasAttribute('OMU', $model);
-		$this->assertSame('0', $model->OMU);
+		$this->assertNull($model->OMU);
 	}
 
 	public function testUpdateDoesNotChangeCreator()
@@ -164,7 +164,7 @@ class UpdateTest extends OdboTestCase
 		$this->assertObjectHasAttribute('OMDT', $model);
 		$this->assertSame(date('Y-m-d H:i:s'), $model->OMDT);
 		$this->assertObjectHasAttribute('OCU', $model);
-		$this->assertSame('0', $model->OCU);
+		$this->assertNull($model->OCU);
 		$this->assertObjectHasAttribute('OMU', $model);
 		$this->assertSame('1', $model->OMU);
 	}

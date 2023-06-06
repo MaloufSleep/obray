@@ -59,8 +59,8 @@ class oWebSocketServer extends ODBO
 
 				$this->debug("Unable to create stream context: " . $err->getMessage() . "\n");
 				$this->throwError("Unable to create stream context: " . $err->getMessage());
-				return;
-
+                $this->logError(static::class, $err);
+                return
 			}
 
 		} else {
@@ -71,7 +71,7 @@ class oWebSocketServer extends ODBO
 		//	3.	establish connection or abort on error
 		$listenstr = $protocol . "://" . $this->host . ":" . $this->port;
 		$this->console("Binding to " . $this->host . ":" . $this->port . " over " . $protocol . "\n");
-		$this->socket = @stream_socket_server($listenstr, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN, $context);
+		$this->socket = stream_socket_server($listenstr, $errno, $errstr, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN, $context);
 
 		if (!is_resource($this->socket)) {
 			$this->console("%s", $errstr . "\n", "RedBold");
@@ -111,7 +111,7 @@ class oWebSocketServer extends ODBO
 			//	1. 	stream_select: look for changes on the socket to process incoming connections
 			$changed = array(0 => $this->socket);
 			$null = NULL;
-			@stream_select($changed, $null, $null, 0, 20000);
+			stream_select($changed, $null, $null, 0, 20000);
 
 			//	2. 	If new connection fork process to child and pass off connection, continue loop
 			if (in_array($this->socket, $changed)) {
@@ -222,7 +222,7 @@ class oWebSocketServer extends ODBO
 			//		1.	stream select on child socket
 			$changed = array(0 => $socket);
 			$null = NULL;
-			@stream_select($changed, $null, $null, 0, 20000);
+			stream_select($changed, $null, $null, 0, 20000);
 
 			//		2.	for any changes on the socket attempt to process the message
 			foreach (array_keys($changed) as $changed_key) {
@@ -371,7 +371,7 @@ class oWebSocketServer extends ODBO
 	{
 		//	1.	accept new socket
 		$this->debug("%s", "\nAttempting to connect to a new socket.\n", "YellowBold");
-		$new_socket = @stream_socket_accept($socket, 1);
+		$new_socket = stream_socket_accept($socket, 1);
 
 		//	2. 	handle error on socket accept
 		if (!$new_socket) {
@@ -455,11 +455,7 @@ class oWebSocketServer extends ODBO
 		for ($written = 0; $written < strlen($string); $written += $fwrite) {
 
 			//		1.	attempt to write, handle error
-			try {
-				$fwrite = @fwrite($socket, substr($string, $written), 10240);
-			} catch (Exception $err) {
-				return FALSE;
-			}
+            $fwrite = fwrite($socket, substr($string, $written), 10240);
 
 			//		2. 	if nothing written or failure
 			if ($fwrite === 0 || $fwrite === FALSE) {
