@@ -12,4 +12,9 @@ trait FakesAuthentication
 			public $ouser_permission_level = 1;
 		};
 	}
+	protected function unauthenticate()
+	{
+		global $_SESSION;
+		unset($_SESSION['ouser']);
+	}
 }
