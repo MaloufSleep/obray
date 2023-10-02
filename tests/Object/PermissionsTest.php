@@ -91,11 +91,6 @@ class PermissionsTest extends TestCase
         $this->assertInstanceOf(cPermissionController::class, $response);
     }
 
-    /**
-     * @return void
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
     public function testUserPermissionBasicAuth()
     {
         require_once __DIR__ . '/../../test_files/models/OUsers.php';
@@ -108,11 +103,6 @@ class PermissionsTest extends TestCase
         $this->assertInstanceOf(cPermissionController::class, $response);
     }
 
-    /**
-     * @return void
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
     public function testUserPermissionBasicAuthThatFails()
     {
         require_once __DIR__ . '/../../test_files/models/OUsers.php';
@@ -144,10 +134,6 @@ class PermissionsTest extends TestCase
         $this->assertInstanceOf(cPermissionController::class, $response);
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
     public function testNonGraduatedPermissionsWrongAuth()
     {
         $this->authenticate();
@@ -163,6 +149,49 @@ class PermissionsTest extends TestCase
         $this->authenticate();
         $_SESSION['ouser']->ouser_permission_level = null;
         $response = $this->route('PermissionController/nonGraduated');
+
+        $this->assertError($response, $this->defaultForbiddenErrors);
+        $this->assertInstanceOf(cPermissionController::class, $response);
+    }
+
+
+    public function testGraduatedPermissionNoAuth()
+    {
+        define('__OBRAY_GRADUATED_PERMISSIONS__', true);
+        $this->unauthenticate();
+        $response = $this->route('PermissionController/graduated');
+
+        $this->assertError($response, $this->defaultForbiddenErrors);
+        $this->assertInstanceOf(cPermissionController::class, $response);
+    }
+
+    public function testGraduatedPermissionAuth()
+    {
+        define('__OBRAY_GRADUATED_PERMISSIONS__', true);
+        $this->authenticate();
+        $response = $this->route('PermissionController/graduated');
+
+        $this->assertNotError($response);
+        $this->assertInstanceOf(cPermissionController::class, $response);
+    }
+
+    public function testGraduatedPermissionGreaterAuth()
+    {
+        define('__OBRAY_GRADUATED_PERMISSIONS__', true);
+        $this->authenticate();
+        $_SESSION['ouser']->ouser_permission_level = 2;
+        $response = $this->route('PermissionController/graduated');
+
+        $this->assertNotError($response);
+        $this->assertInstanceOf(cPermissionController::class, $response);
+    }
+
+    public function testGraduatedPermissionWrongAuth()
+    {
+        define('__OBRAY_GRADUATED_PERMISSIONS__', true);
+        $this->authenticate();
+        $_SESSION['ouser']->ouser_permission_level = 0;
+        $response = $this->route('PermissionController/graduated');
 
         $this->assertError($response, $this->defaultForbiddenErrors);
         $this->assertInstanceOf(cPermissionController::class, $response);
