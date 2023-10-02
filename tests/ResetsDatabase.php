@@ -21,8 +21,7 @@ trait ResetsDatabase
             ]
         );
 
-        $timeZone = $this->pdo->query('SELECT @@session.time_zone')->fetchColumn();
-        date_default_timezone_set($timeZone);
+        date_default_timezone_set('UTC');
 
         $this->pdo->exec('DROP DATABASE IF EXISTS `' . __OBRAY_DATABASE_NAME__ . '`');
         $this->pdo->exec('CREATE DATABASE `' . __OBRAY_DATABASE_NAME__ . '`');
