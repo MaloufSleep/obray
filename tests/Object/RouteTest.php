@@ -107,6 +107,7 @@ class RouteTest extends TestCase
 			'http_debug' => true,
 			'http_user_agent' => 'Test HTTP Client',
 			'http_method' => 'patch',
+            'body' => ''
 		]);
 
 		$this->assertNotError();
