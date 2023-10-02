@@ -6,7 +6,7 @@
   "require": {
     "php": "^7.4|^8.0",
     "ext-curl": "*",
-    "symfony/console": "^5.3",
+    "symfony/console": "^5.4",
     "ext-pdo": "*",
     "ext-json": "*",
     "ext-openssl": "*",
