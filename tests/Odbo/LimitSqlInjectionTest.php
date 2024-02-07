@@ -22,9 +22,9 @@ class LimitSqlInjectionTest extends OdboTestCase
     public function testLimitStillWorks()
     {
         $this->pdo->query('INSERT INTO ' . $this->testModel->table . ' (column_int, column_string) VALUES (1, "one")');
-        $firstId = $this->pdo->lastInsertId();
+        $firstId = (int)$this->pdo->lastInsertId();
         $this->pdo->query('INSERT INTO ' . $this->testModel->table . ' (column_int, column_string) VALUES (2, "two")');
-        $secondId = $this->pdo->lastInsertId();
+        $secondId = (int)$this->pdo->lastInsertId();
 
         $this->testModel->get([
             'start' => 0,
@@ -70,7 +70,7 @@ class LimitSqlInjectionTest extends OdboTestCase
         $this->assertObjectHasProperty('id', $data);
         $this->assertSame($firstId, $data->id);
         $this->assertObjectHasProperty('column_int', $data);
-        $this->assertSame('1', $data->column_int);
+        $this->assertSame(1, $data->column_int);
         $this->assertObjectHasProperty('column_string', $data);
         $this->assertSame('one', $data->column_string);
     }
@@ -85,7 +85,7 @@ class LimitSqlInjectionTest extends OdboTestCase
         $this->assertObjectHasProperty('id', $data);
         $this->assertSame($secondId, $data->id);
         $this->assertObjectHasProperty('column_int', $data);
-        $this->assertSame('2', $data->column_int);
+        $this->assertSame(2, $data->column_int);
         $this->assertObjectHasProperty('column_string', $data);
         $this->assertSame('two', $data->column_string);
     }
