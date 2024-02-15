@@ -310,7 +310,7 @@ class PermissionsTest extends TestCase
         $this->assertNotError($response);
         $this->assertInstanceOf(RouteNotFoundHandler::class, $response);
 
-        $this->assertObjectHasAttribute('data', $response);
+        $this->assertObjectHasProperty('data', $response);
         $this->assertSame('Success', $response->data);
     }
 }
