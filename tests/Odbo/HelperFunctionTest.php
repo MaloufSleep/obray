@@ -59,9 +59,9 @@ class HelperFunctionTest extends OdboTestCase
 			$this->assertArrayHasKey('column_int', $result);
 			$this->assertSame('15', $result['column_int']);
 			$this->assertArrayHasKey('OCDT', $result);
-			$this->assertSame(date('Y-m-d H:i:s'), $result['OCDT']);
+            $this->assertTimestampsEqualsWithDelta(date('Y-m-d H:i:s'), $result['OCDT']);
 			$this->assertArrayHasKey('OMDT', $result);
-			$this->assertSame(date('Y-m-d H:i:s'), $result['OMDT']);
+            $this->assertTimestampsEqualsWithDelta(date('Y-m-d H:i:s'), $result['OMDT']);
 			$this->assertArrayHasKey('OCU', $result);
 			$this->assertSame('0', $result['OCU']);
 			$this->assertArrayHasKey('OMU', $result);

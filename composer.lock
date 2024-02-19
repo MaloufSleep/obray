@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9d4947f987ef86dd349da4229b540eca",
+    "content-hash": "e81c3199d936b65b4442585b060d6e1f",
     "packages": [
         {
             "name": "illuminate/contracts",
