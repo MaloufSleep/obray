@@ -34,9 +34,9 @@ class AddTest extends OdboTestCase
         $this->assertObjectHasProperty('column_int', $model);
         $this->assertSame('1', $model->column_int);
         $this->assertObjectHasProperty('OCDT', $model);
-        $this->assertSame(date('Y-m-d H:i:s'), $model->OCDT);
+        $this->assertTimestampsEqualsWithDelta(date('Y-m-d H:i:s'), $model->OCDT);
         $this->assertObjectHasProperty('OMDT', $model);
-        $this->assertSame(date('Y-m-d H:i:s'), $model->OMDT);
+        $this->assertTimestampsEqualsWithDelta(date('Y-m-d H:i:s'), $model->OMDT);
         $this->assertObjectHasProperty('OCU', $model);
         $this->assertSame('0', $model->OCU);
         $this->assertObjectHasProperty('OMU', $model);
@@ -64,9 +64,9 @@ class AddTest extends OdboTestCase
         $this->assertObjectHasProperty('column_string', $model);
         $this->assertSame(null, $model->column_string);
         $this->assertObjectHasProperty('OCDT', $model);
-        $this->assertSame(date('Y-m-d H:i:s'), $model->OCDT);
+        $this->assertTimestampsEqualsWithDelta(date('Y-m-d H:i:s'), $model->OCDT);
         $this->assertObjectHasProperty('OMDT', $model);
-        $this->assertSame(date('Y-m-d H:i:s'), $model->OMDT);
+        $this->assertTimestampsEqualsWithDelta(date('Y-m-d H:i:s'), $model->OMDT);
         $this->assertObjectHasProperty('OCU', $model);
         $this->assertSame('0', $model->OCU);
         $this->assertObjectHasProperty('OMU', $model);
@@ -94,9 +94,9 @@ class AddTest extends OdboTestCase
         $this->assertObjectHasProperty('column_string', $model);
         $this->assertSame(null, $model->column_string);
         $this->assertObjectHasProperty('OCDT', $model);
-        $this->assertSame(date('Y-m-d H:i:s'), $model->OCDT);
+        $this->assertTimestampsEqualsWithDelta(date('Y-m-d H:i:s'), $model->OCDT);
         $this->assertObjectHasProperty('OMDT', $model);
-        $this->assertSame(date('Y-m-d H:i:s'), $model->OMDT);
+        $this->assertTimestampsEqualsWithDelta(date('Y-m-d H:i:s'), $model->OMDT);
         $this->assertObjectHasProperty('OCU', $model);
         $this->assertSame('0', $model->OCU);
         $this->assertObjectHasProperty('OMU', $model);
