@@ -692,7 +692,7 @@ class OObject
         }
         $path = $path[0];
 
-        $path_array = preg_split('[/]', $path, NULL, PREG_SPLIT_NO_EMPTY);
+        $path_array = preg_split('[/]', $path, -1, PREG_SPLIT_NO_EMPTY);
         $path = '/';
 
         $routes = unserialize(__OBRAY_ROUTES__);
