@@ -1,39 +1,39 @@
 {
-  "name": "obray/obray",
-  "description": "Simple PHP framework for websites and applications.",
-  "license": "MIT",
-  "homepage": "https://www.obray.net",
-  "require": {
-    "php": "^7.4|^8.0",
-    "ext-curl": "*",
-    "symfony/console": "^5.4",
-    "ext-pdo": "*",
-    "ext-json": "*",
-    "ext-openssl": "*",
-    "illuminate/contracts": "^8"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^9.5",
-    "monolog/monolog": "^2.4"
-  },
-  "suggest": {
-    "monolog/monolog": "Allows more advanced logging of the application flow"
-  },
-  "autoload": {
-    "classmap": [
-      "core"
-    ],
-    "files": [
-      "core/functions.php"
-    ]
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "tests\\": "tests/",
-      "App\\": "test_files/app/"
+    "name": "obray/obray",
+    "description": "Simple PHP framework for websites and applications.",
+    "license": "MIT",
+    "homepage": "https://www.obray.net",
+    "require": {
+        "php": "^8.0",
+        "ext-curl": "*",
+        "symfony/console": "^5.4|^6",
+        "ext-pdo": "*",
+        "ext-json": "*",
+        "ext-openssl": "*",
+        "illuminate/contracts": "^8|^9"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "monolog/monolog": "^2.4"
+    },
+    "suggest": {
+        "monolog/monolog": "Allows more advanced logging of the application flow"
+    },
+    "autoload": {
+        "classmap": [
+            "core"
+        ],
+        "files": [
+            "core/functions.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "tests\\": "tests/",
+            "App\\": "test_files/app/"
+        }
+    },
+    "scripts": {
+        "test": "export XDEBUG_MODE=coverage && ./vendor/bin/phpunit --colors --coverage-html coverage"
     }
-  },
-  "scripts": {
-    "test": "export XDEBUG_MODE=coverage && ./vendor/bin/phpunit --colors --coverage-html coverage"
-  }
 }
