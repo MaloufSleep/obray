@@ -238,11 +238,6 @@ class OObject
 				$this->console($params);
 			}
 
-			if ($debug) {
-				$this->console("*****HEADERS*****");
-				$this->console($headers);
-			}
-
 			curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 			curl_setopt($ch, CURLOPT_URL, $path);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
@@ -254,12 +249,12 @@ class OObject
 				$this->console($this->data);
 			}
 
-			$headers = curl_getinfo($ch, CURLINFO_HEADER_OUT);
-			$this->console($headers);
-			$content_type = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
 			$info = curl_getinfo($ch);
-			$this->console($info);
-			$data = json_decode($this->data);
+            if ($debug) {
+                $this->console("Info: " . print_r($info, true));
+            }
+
+            $data = json_decode($this->data);
 
 			$info["http_code"] = intval($info["http_code"]);
 			if ($info["http_code"] < 200 || $info["http_code"] >= 300) {
