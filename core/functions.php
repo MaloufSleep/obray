@@ -1,47 +1,76 @@
 <?php
 
 if (!function_exists('getDatabaseConnection')) {
-    function getDatabaseConnection($reconnect = FALSE)
+    /**
+     * @param bool $reconnect
+     * @return \PDO
+     */
+    function getDatabaseConnection($reconnect = false)
     {
-
         global $conn;
-        if (!isset($conn) || $reconnect) {
-            $conn = new PDO('mysql:host=' . __OBRAY_DATABASE_HOST__ . ';dbname=' . __OBRAY_DATABASE_NAME__ . ';charset=utf8', __OBRAY_DATABASE_USERNAME__, __OBRAY_DATABASE_PASSWORD__, array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
-            if (defined('__OBRAY_DATABASE_ATTRIBUTES__')) {
-                foreach (__OBRAY_DATABASE_ATTRIBUTES__ as $attribute => $value) {
-                    $conn->setAttribute($attribute, $value);
-                }
-            } else {
-                $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            }
+
+        if ($conn && !$reconnect) {
+            return $conn;
         }
-        return $conn;
+
+        if ($resolver = ODBO::getPdoResolver()) {{
+            return $conn = $resolver();
+        }}
+
+        return $conn = buildDefaultPdoObject(
+            __OBRAY_DATABASE_HOST__,
+            __OBRAY_DATABASE_NAME__,
+            __OBRAY_DATABASE_USERNAME__,
+            __OBRAY_DATABASE_PASSWORD__
+        );
     }
 }
 
 if (!function_exists('getReaderDatabaseConnection')) {
-    function getReaderDatabaseConnection($reconnect = FALSE)
+    function getReaderDatabaseConnection($reconnect = false)
     {
         global $readConn;
+
+        if ($readConn && !$reconnect) {
+            return $readConn;
+        }
+
+        if ($resolver = ODBO::getReadPdoResolver()) {
+            return $readConn = $resolver();
+        }
+
         if (!defined('__OBRAY_DATABASE_HOST_READER__')) {
             return getDatabaseConnection($reconnect);
         }
-        if (!isset($readConn) || $reconnect) {
-            try {
-                $readConn = new PDO('mysql:host=' . __OBRAY_DATABASE_HOST_READER__ . ';dbname=' . __OBRAY_DATABASE_NAME__ . ';charset=utf8', __OBRAY_DATABASE_USERNAME__, __OBRAY_DATABASE_PASSWORD__, array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'));
-                if (defined('__OBRAY_DATABASE_ATTRIBUTES__')) {
-                    foreach (__OBRAY_DATABASE_ATTRIBUTES__ as $attribute => $value) {
-                        $readConn->setAttribute($attribute, $value);
-                    }
-                } else {
-                    $readConn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                }
-            } catch (PDOException $e) {
-                echo 'ERROR: ' . $e->getMessage();
-                exit();
+
+        return $readConn = buildDefaultPdoObject(
+            __OBRAY_DATABASE_HOST_READER__,
+            __OBRAY_DATABASE_NAME__,
+            __OBRAY_DATABASE_USERNAME__,
+            __OBRAY_DATABASE_PASSWORD__
+        );
+    }
+}
+
+if (!function_exists('buildDefaultPdoObject')) {
+    function buildDefaultPdoObject($host, $db, $username, $password)
+    {
+        $pdo = new PDO(
+            'mysql:host=' . $host . ';dbname=' . $db . ';charset=utf8',
+            $username,
+            $password,
+            array(PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8')
+        );
+
+        if (defined('__OBRAY_DATABASE_ATTRIBUTES__')) {
+            foreach (__OBRAY_DATABASE_ATTRIBUTES__ as $attribute => $value) {
+                $pdo->setAttribute($attribute, $value);
             }
+        } else {
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }
-        return $readConn;
+
+        return $pdo;
     }
 }
 
