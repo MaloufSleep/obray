@@ -13,19 +13,19 @@ class OdboTestCase extends TestCase
 {
     use ResetsDatabase;
 
-	/**
-	 * @var \ODBO
-	 */
-	protected $testModel;
+    /**
+     * @var \ODBO
+     */
+    protected $testModel;
 
-	protected function setUp(): void
-	{
-		parent::setUp();
+    protected function setUp(): void
+    {
+        parent::setUp();
         $this->initializeResetsDatabase();
 
-		$this->testModel = new TestModel();
-		$this->testModel->dbh = getDatabaseConnection(true);
-	}
+        $this->testModel = new TestModel();
+        $this->testModel->dbh = getDatabaseConnection(true);
+    }
 
     protected function assertTimestampsEqualsWithDelta(DateTime|string $expected, DateTime|string $actual, $delta = 1)
     {
@@ -37,5 +37,20 @@ class OdboTestCase extends TestCase
         }
 
         $this->assertEqualsWithDelta($expected->getTimestamp(), $actual->getTimestamp(), $delta);
+    }
+
+    /**
+     * @test
+     * @runInSeparateProcess
+     * @covers \buildDefaultPdoObject
+     */
+    public function testPdoAttributesArray(): void
+    {
+        define('__OBRAY_DATABASE_ATTRIBUTES__', [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        ]);
+        $conn = getDatabaseConnection(true);
+        $this->assertInstanceOf(PDO::class, $conn);
+        $this->assertSame(PDO::ERRMODE_EXCEPTION, $conn->getAttribute(PDO::ATTR_ERRMODE));
     }
 }
