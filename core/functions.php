@@ -28,6 +28,11 @@ if (!function_exists('getDatabaseConnection')) {
 }
 
 if (!function_exists('getReaderDatabaseConnection')) {
+    /**
+     * Declares the global `$readConn` variable, builds a PDO object, sets `$readConn` to the PDO object, and returns the PDO object.
+     * @param $reconnect
+     * @return \PDO
+     */
     function getReaderDatabaseConnection($reconnect = false): PDO
     {
         global $readConn;
