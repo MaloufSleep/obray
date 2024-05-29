@@ -11,6 +11,7 @@ services:
     volumes:
       - .:/src
     working_dir: /src
+    user: 1000:1000
 
   mysql:
     image: mysql:5.7

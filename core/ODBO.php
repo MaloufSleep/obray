@@ -99,6 +99,9 @@ class ODBO extends OObject
      */
     public $with;
 
+    protected static ?Closure $pdoResolver = null;
+    protected static ?Closure $readPdoResolver = null;
+
     public function __construct()
     {
         $this->primary_key_column = '';
@@ -130,6 +133,26 @@ class ODBO extends OObject
                 'password' => array('sql' => ' varchar(255) ', 'my_sql_type' => 'varchar(255)', 'validation_regex' => '')
             )));
         }
+    }
+
+    public static function setPdoResolver(?Closure $resolver): void
+    {
+        static::$pdoResolver = $resolver;
+    }
+
+    public static function setReadPdoResolver(?Closure $resolver): void
+    {
+        static::$readPdoResolver = $resolver;
+    }
+
+    public static function getPdoResolver(): ?Closure
+    {
+        return static::$pdoResolver;
+    }
+
+    public static function getReadPdoResolver(): ?Closure
+    {
+        return static::$readPdoResolver;
     }
 
     /**

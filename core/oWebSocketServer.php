@@ -60,7 +60,7 @@ class oWebSocketServer extends ODBO
 				$this->debug("Unable to create stream context: " . $err->getMessage() . "\n");
 				$this->throwError("Unable to create stream context: " . $err->getMessage());
                 $this->logError(static::class, $err);
-                return
+                return;
 			}
 
 		} else {
