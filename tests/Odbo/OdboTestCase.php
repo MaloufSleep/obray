@@ -44,10 +44,10 @@ class OdboTestCase extends TestCase
     public function testPdoAttributesArray(): void
     {
         define('__OBRAY_DATABASE_ATTRIBUTES__', [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT,
         ]);
         $conn = getDatabaseConnection(true);
         $this->assertInstanceOf(PDO::class, $conn);
-        $this->assertSame(PDO::ERRMODE_EXCEPTION, $conn->getAttribute(PDO::ATTR_ERRMODE));
+        $this->assertSame(PDO::ERRMODE_SILENT, $conn->getAttribute(PDO::ATTR_ERRMODE));
     }
 }
