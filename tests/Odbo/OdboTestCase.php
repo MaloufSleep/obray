@@ -13,10 +13,7 @@ class OdboTestCase extends TestCase
 {
     use ResetsDatabase;
 
-    /**
-     * @var \ODBO
-     */
-    protected $testModel;
+    protected ODBO $testModel;
 
     protected function setUp(): void
     {
