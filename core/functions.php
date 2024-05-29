@@ -1,6 +1,11 @@
 <?php
 
 if (!function_exists('getDatabaseConnection')) {
+    /**
+     * Declares the global `$conn` variable, builds a PDO object, sets `$conn` to the PDO object, and returns the PDO object.
+     * @param bool $reconnect
+     * @return \PDO
+     */
     function getDatabaseConnection(bool $reconnect = false): PDO
     {
         global $conn;
