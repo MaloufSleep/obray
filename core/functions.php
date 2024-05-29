@@ -1,11 +1,7 @@
 <?php
 
 if (!function_exists('getDatabaseConnection')) {
-    /**
-     * @param bool $reconnect
-     * @return \PDO
-     */
-    function getDatabaseConnection($reconnect = false)
+    function getDatabaseConnection(bool $reconnect = false): PDO
     {
         global $conn;
 
@@ -27,7 +23,7 @@ if (!function_exists('getDatabaseConnection')) {
 }
 
 if (!function_exists('getReaderDatabaseConnection')) {
-    function getReaderDatabaseConnection($reconnect = false)
+    function getReaderDatabaseConnection($reconnect = false): PDO
     {
         global $readConn;
 
@@ -53,7 +49,7 @@ if (!function_exists('getReaderDatabaseConnection')) {
 }
 
 if (!function_exists('buildDefaultPdoObject')) {
-    function buildDefaultPdoObject($host, $db, $username, $password)
+    function buildDefaultPdoObject($host, $db, $username, $password): PDO
     {
         $pdo = new PDO(
             'mysql:host=' . $host . ';dbname=' . $db . ';charset=utf8',
