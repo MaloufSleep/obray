@@ -120,6 +120,8 @@ class ORouter extends OObject
 			$content_type = $tmp_type;
 		}
 
+		// check if `JSON_NUMERIC_CHECK` should be used for this route
+		$jsonNumericCheck = (isset($obj->jsonNumericCheck) && is_bool($obj->jsonNumericCheck)) ? $obj->jsonNumericCheck : true;
 
 		/*****************************************************************************************
 		 *
@@ -135,7 +137,13 @@ class ORouter extends OObject
 			case 'application/json':                                                            // Handle JSON (default)
 
 				$obj->runtime = (microtime(TRUE) - $start_time) * 1000;
-				$json = json_encode($obj, JSON_PRETTY_PRINT | JSON_NUMERIC_CHECK);
+
+				$encodingFlags = JSON_PRETTY_PRINT;
+                if($jsonNumericCheck){
+                    $encodingFlags |= JSON_NUMERIC_CHECK;
+                }
+
+				$json = json_encode($obj, $encodingFlags);
 				if ($json === FALSE) {
 					$json = json_encode($obj, JSON_PRETTY_PRINT);
 				}
