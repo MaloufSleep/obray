@@ -6,6 +6,11 @@ use tests\TestCase;
 
 class ErrorsTest extends TestCase
 {
+    public function testErrorsActuallyBeingDefinedStillIsNotSet()
+    {
+        $this->assertFalse(isset($this->router->errors));
+    }
+
 	/**
 	 * @covers OObject
 	 */

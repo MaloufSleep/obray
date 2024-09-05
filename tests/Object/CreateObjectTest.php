@@ -24,7 +24,7 @@ class CreateObjectTest extends TestCase
 
         $this->assertInstanceOf(OObject::class, $response);
         $this->assertSame($this->router, $response);
-        $this->assertObjectNotHasProperty('data', $response);
+        $this->assertNull($response->data);
         $this->assertTrue($response->isError());
         $this->assertObjectHasProperty('errors', $response);
         $this->assertJsonStringEqualsJsonString(json_encode([
@@ -41,7 +41,7 @@ class CreateObjectTest extends TestCase
         $this->assertNotError();
         $this->assertInstanceOf(cTestController::class, $response);
         $this->assertNotSame($this->router, $response);
-        $this->assertObjectNotHasProperty('data', $response);
+        $this->assertNull($response->data);
     }
 
     public function testBlank()
@@ -50,7 +50,7 @@ class CreateObjectTest extends TestCase
 
         $this->assertInstanceOf(OObject::class, $response);
         $this->assertSame($this->router, $response);
-        $this->assertObjectNotHasProperty('data', $response);
+        $this->assertNull($response->data);
         $this->assertTrue($response->isError());
         $this->assertObjectHasProperty('errors', $response);
         $this->assertJsonStringEqualsJsonString(json_encode([
@@ -66,7 +66,7 @@ class CreateObjectTest extends TestCase
 
         $this->assertInstanceOf(cNestedController::class, $response);
         $this->assertFalse($response->isError());
-        $this->assertObjectNotHasProperty('errors', $response);
+        $this->assertNull($response->errors);
         $this->assertObjectHasProperty('data', $response);
         $this->assertSame('index', $response->data);
     }

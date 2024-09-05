@@ -43,6 +43,6 @@ class ExecuteMethodTest extends TestCase
         $this->assertNotSame($this->router, $response);
         $this->assertInstanceOf(cNoIndex::class, $response);
         $this->assertNotError($response);
-        $this->assertObjectNotHasProperty('data', $response);
+        $this->assertNull($response->data);
     }
 }

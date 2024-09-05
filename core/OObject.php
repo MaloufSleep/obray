@@ -6,10 +6,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @property array|mixed $params
- * @property array $data
  */
 class OObject
 {
+    public $data = null;
+    public $errors = null;
+
+    protected array $permissions = [];
+
     // private data members
     private $delegate = FALSE;                                                                    // does this object have a delegate [TO BE IMPLEMENTED]
     private $starttime;                                                                            // records the start time (time the object was created).  Cane be used for performance tuning
