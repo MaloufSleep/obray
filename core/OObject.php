@@ -4,9 +4,6 @@ use Illuminate\Contracts\Container\Container;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * @property array|mixed $params
- */
 class OObject
 {
     public $data = null;
@@ -39,6 +36,16 @@ class OObject
     // public data members
     public $object = ''; // stores the name of the class
     protected Throwable $lastException;
+    public $objectType;
+    public $components;
+    public $rPath;
+    public $path_to_object;
+    public $namespaced_path;
+    public $namespaced_controller_path;
+    public $deprecated_controller_path;
+    public $namespaced_model_path;
+    public $deprecated_model_path;
+    public $params;
 
     public function console(...$args)
     {
