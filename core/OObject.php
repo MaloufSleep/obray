@@ -46,6 +46,7 @@ class OObject
     public $namespaced_model_path;
     public $deprecated_model_path;
     public $params;
+    public $runtime;
 
     public function console(...$args)
     {
