@@ -1,9 +1,9 @@
-FROM php:8.1-alpine as os
+FROM php:8.2-alpine as os
 
-RUN apk add --no-cache $PHPIZE_DEPS
+RUN apk add --no-cache $PHPIZE_DEPS linux-headers
 
 RUN docker-php-ext-install pdo pdo_mysql
-RUN yes '' | pecl install -o -f xdebug-3.1.0
+RUN yes '' | pecl install -o -f xdebug-3.3.2
 RUN docker-php-ext-enable xdebug
 
 COPY xdebug.ini /usr/local/etc/php/conf.d/
