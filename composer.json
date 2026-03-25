@@ -1,5 +1,6 @@
 {
     "name": "obray/obray",
+    "version": "4.8.0",
     "description": "Simple PHP framework for websites and applications.",
     "license": "MIT",
     "homepage": "https://www.obray.net",
@@ -10,7 +11,7 @@
         "ext-pdo": "*",
         "ext-json": "*",
         "ext-openssl": "*",
-        "illuminate/contracts": "^8|^9|^10|^11"
+        "illuminate/contracts": "^8|^9|^10|^11|^12|^13"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
